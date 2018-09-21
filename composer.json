@@ -19,7 +19,7 @@
   "autoload": {
     "psr-4": {
       "Locastic\\ApiPlatformTranslationBundle\\": "src/",
-      "Locastic\\ApiPlatformTranslationBundle\\Tests": "tests/"
+      "Locastic\\ApiPlatformTranslationBundle\\Tests\\": "tests/"
     }
   },
   "autoload-dev": {
