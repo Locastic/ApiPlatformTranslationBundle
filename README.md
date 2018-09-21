@@ -4,7 +4,7 @@ Translation bundle for [ApiPlatform](https://api-platform.com/) based on [Sylius
 Installation:
 -------------
 ```
-$ composer require locastic/api-platform-translation-bundle`
+$ composer require locastic/api-platform-translation-bundle
 ```
 
 Implementation:
