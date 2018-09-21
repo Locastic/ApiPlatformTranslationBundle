@@ -1,0 +1,36 @@
+{
+  "name": "locastic/api-translation-bundle",
+  "description": "Translation bundle for Api platform based on Sylius translation",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Paula",
+      "email": "paula@locastic.com"
+    }
+  ],
+  "require": {
+    "php": "^7.1",
+    "api-platform/api-pack": "^1.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.3"
+  },
+  "prefer-stable": true,
+  "autoload": {
+    "psr-4": {
+      "Locastic\\ApiPlatformTranslationBundle\\": "src/",
+      "Locastic\\ApiPlatformTranslationBundle\\Tests": "tests/"
+    }
+  },
+  "autoload-dev": {
+    "classmap": ["tests/Application/app/AppKernel.php"]
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  },
+  "config": {
+    "bin-dir": "bin"
+  }
+}

@@ -1,0 +1,20 @@
+services:
+    locastic_api_platform_translation.service.translator:
+        class: Locastic\ApiPlatformTranslationBundle\Service\Translator
+        arguments:
+            - '@translator'
+            - '@request_stack'
+            - '%locale%'
+
+    locastic_api_platform_translation.subscriber.assign_locale:
+        class: Locastic\ApiPlatformTranslationBundle\EventSubscriber\AssignLocaleSubscriber
+        arguments:
+            - '@locastic_api_platform_translation.service.translator'
+        tags:
+            - { name: doctrine.event_listener, event: postLoad }
+            - { name: doctrine.event_listener, event: prePersist }
+
+# Filters
+    locastic_api_platform_translation.filter.translation_groups:
+        parent: 'api_platform.serializer.group_filter'
+        tags:      [ { name: 'api_platform.filter', id: 'translation.groups' } ]
