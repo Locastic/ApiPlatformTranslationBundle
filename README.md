@@ -16,6 +16,7 @@ Locastic Api Translation Bundle<br>
         <img src="https://poser.pugx.org/locastic/api-platform-translation-bundle/downloads" />
     </a>
 </h1>
+
 Translation bundle for [ApiPlatform](https://api-platform.com/) based on [Sylius translation](https://docs.sylius.com/en/1.2/book/architecture/translations.html)
 
 Installation:
