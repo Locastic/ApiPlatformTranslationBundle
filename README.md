@@ -1,5 +1,5 @@
-# Locastic Api Translation Bundle
 <h1 align="center">
+Locastic Api Translation Bundle<br>
     <a href="https://packagist.org/packages/locastic/api-platform-translation-bundle" title="License" target="_blank">
         <img src="https://img.shields.io/packagist/l/locastic/api-platform-translation-bundle.svg" />
     </a>
