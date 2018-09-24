@@ -1,5 +1,5 @@
 {
-  "name": "locastic/api-translation-bundle",
+  "name": "locastic/api-platform-translation-bundle",
   "description": "Translation bundle for Api platform based on Sylius translation",
   "license": "MIT",
   "authors": [
