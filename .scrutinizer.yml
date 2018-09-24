@@ -23,4 +23,4 @@ checks:
         avoid_usage_of_logical_operators: true
         no_exit: false
         no_unnecessary_final_modifier: false
-        overriding_private_members: fals
+        overriding_private_members: false
