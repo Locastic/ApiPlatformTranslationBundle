@@ -1,4 +1,21 @@
 # Locastic Api Translation Bundle
+<h1 align="center">
+    <a href="https://packagist.org/packages/locastic/api-platform-translation-bundle" title="License" target="_blank">
+        <img src="https://img.shields.io/packagist/l/locastic/api-platform-translation-bundle.svg" />
+    </a>
+    <a href="https://packagist.org/packages/locastic/api-platform-translation-bundle" title="Version" target="_blank">
+        <img src="https://img.shields.io/packagist/v/Locastic/api-platform-translation-bundle.svg" />
+    </a>
+    <a href="https://travis-ci.org/Locastic/ApiPlatformTranslationBundle" title="Build status" target="_blank">
+        <img src="https://img.shields.io/travis/Locastic/ApiPlatformTranslationBundle/master.svg" />
+    </a>
+    <a href="https://scrutinizer-ci.com/g/Locastic/ApiPlatformTranslationBundle/" title="Scrutinizer" target="_blank">
+        <img src="https://img.shields.io/scrutinizer/g/Locastic/ApiPlatformTranslationBundle.svg" />
+    </a>
+    <a href="https://packagist.org/packages/locastic/api-platform-translation-bundle" title="Total Downloads" target="_blank">
+        <img src="https://poser.pugx.org/locastic/api-platform-translation-bundle/downloads" />
+    </a>
+</h1>
 Translation bundle for [ApiPlatform](https://api-platform.com/) based on [Sylius translation](https://docs.sylius.com/en/1.2/book/architecture/translations.html)
 
 Installation:
