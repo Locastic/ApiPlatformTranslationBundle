@@ -48,7 +48,7 @@ class Translator
      * @param null $locale
      * @return string
      */
-    public function translate($string, array $parameters = [], $domain = null, $locale = null)
+    public function translate($string, array $parameters = [], $domain = null, $locale = null): string
     {
         if (!$locale) {
             $locale = $this->loadCurrentLocale();
@@ -60,7 +60,7 @@ class Translator
     /**
      * @return mixed|string
      */
-    public function loadCurrentLocale()
+    public function loadCurrentLocale(): string
     {
         $request = $this->requestStack->getCurrentRequest();
 
@@ -71,7 +71,9 @@ class Translator
         $localeCode = $request->query->get('locale');
 
         if (!$localeCode) {
-            return $this->defaultLocale;
+            $preferredLanguage = $request->getPreferredLanguage();
+
+            return empty($preferredLanguage) ? $this->defaultLocale : $preferredLanguage;
         }
 
         return $localeCode;

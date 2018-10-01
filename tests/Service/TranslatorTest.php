@@ -115,6 +115,36 @@ class TranslatorTest extends TestCase
 
     /**
      * @test loadCurrentLocale
+     * @dataProvider provideLocalesWithAcceptLanguage
+     */
+    public function testLoadAcceptedLanguagesHeader(
+        $requestedLocale,
+        $acceptedLanguage,
+        $expectedLocale
+    ) {
+        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
+
+        $request = $this->createConfiguredMock(Request::class, [
+            'getPreferredLanguage' => $acceptedLanguage
+        ]);
+        $request->query = $this->createMock(ParameterBag::class);
+        $this->requestStack
+            ->expects($this->once())
+            ->method('getCurrentRequest')
+            ->willReturn($request);
+
+        $request->query
+            ->expects($this->once())
+            ->method('get')
+            ->with('locale')
+            ->willReturn($requestedLocale);
+
+        $actualLocale = $translator->loadCurrentLocale();
+        $this->assertSame($expectedLocale, $actualLocale);
+    }
+
+    /**
+     * @test loadCurrentLocale
      */
     public function testLoadCurrentLocaleWithNoRequest()
     {
@@ -166,5 +196,20 @@ class TranslatorTest extends TestCase
         yield['hr', 'hr'];
         yield['', 'en'];
         yield[null, 'en'];
+    }
+
+    /**
+     * @return \Generator
+     */
+    public function provideLocalesWithAcceptLanguage()
+    {
+        yield['en', 'fr', 'en'];
+        yield['hr', 'de', 'hr'];
+        yield['', 'fr', 'fr'];
+        yield['de', '', 'de'];
+        yield[null, 'it', 'it'];
+        yield['nl', null, 'nl'];
+        yield['', '', 'en'];
+        yield[null, null, 'en'];
     }
 }
