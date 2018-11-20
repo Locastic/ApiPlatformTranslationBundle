@@ -17,15 +17,15 @@ interface TranslationInterface
     /**
      * @param null|TranslatableInterface $translatable
      */
-    public function setTranslatable(TranslatableInterface $translatable = null): void;
+    public function setTranslatable(?TranslatableInterface $translatable = null): void;
 
     /**
-     * @return string
+     * @return null|string
      */
     public function getLocale(): ?string;
 
     /**
-     * @param string $locale
+     * @param null|string $locale
      */
-    public function setLocale($locale): void;
+    public function setLocale(?string $locale): void;
 }

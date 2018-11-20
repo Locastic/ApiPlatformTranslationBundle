@@ -14,7 +14,7 @@ use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
 class DummyTranslation extends AbstractTranslation
 {
     /**
-     * @var string
+     * @var null|string
      */
     private $translation;
 
@@ -25,7 +25,7 @@ class DummyTranslation extends AbstractTranslation
      *
      * @return DummyTranslation
      */
-    public function setTranslation($translation): DummyTranslation
+    public function setTranslation(string $translation): DummyTranslation
     {
         $this->translation = $translation;
 
@@ -35,9 +35,9 @@ class DummyTranslation extends AbstractTranslation
     /**
      * Get translation
      *
-     * @return string
+     * @return null|string
      */
-    public function getTranslation():?string
+    public function getTranslation(): ?string
     {
         return $this->translation;
     }

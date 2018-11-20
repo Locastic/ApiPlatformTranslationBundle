@@ -19,18 +19,18 @@ interface TranslatableInterface
     public function getTranslations();
 
     /**
-     * @param string $locale
+     * @param null|string $locale
      *
      * @return TranslationInterface
      */
-    public function getTranslation($locale = null): ?TranslationInterface;
+    public function getTranslation(?string $locale = null): TranslationInterface;
 
     /**
      * @param TranslationInterface $translation
      *
      * @return bool
      */
-    public function hasTranslation(TranslationInterface $translation): bool ;
+    public function hasTranslation(TranslationInterface $translation): bool;
 
     /**
      * @param TranslationInterface $translation
@@ -43,12 +43,12 @@ interface TranslatableInterface
     public function removeTranslation(TranslationInterface $translation): void;
 
     /**
-     * @param string $locale
+     * @param null|string $locale
      */
-    public function setCurrentLocale($locale): void;
+    public function setCurrentLocale(?string $locale): void;
 
     /**
-     * @param string $locale
+     * @param null|string $locale
      */
-    public function setFallbackLocale($locale): void;
+    public function setFallbackLocale(?string $locale): void;
 }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Locastic\ApiPlatformTranslationBundle\EventSubscriber;
+namespace Locastic\ApiPlatformTranslationBundle\EventListener;
 
 use Doctrine\Common\EventSubscriber;
-use Doctrine\ORM\Event\LifecycleEventArgs;
+use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
@@ -15,7 +15,7 @@ use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
  *
  * @package Locastic\ApiPlatformTranslationBundle\EventSubscriber
  */
-class AssignLocaleSubscriber implements EventSubscriber
+class AssignLocaleListener implements EventSubscriber
 {
     /**
      * @var Translator
@@ -52,11 +52,17 @@ class AssignLocaleSubscriber implements EventSubscriber
         $this->assignLocale($args);
     }
 
+    /**
+     * @param LifecycleEventArgs $args
+     */
     public function prePersist(LifecycleEventArgs $args): void
     {
         $this->assignLocale($args);
     }
 
+    /**
+     * @param LifecycleEventArgs $args
+     */
     private function assignLocale(LifecycleEventArgs $args): void
     {
         $entity = $args->getEntity();

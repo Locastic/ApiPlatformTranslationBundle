@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Locastic\ApiPlatformTranslationBundle\Tests\EventSubscriber;
+namespace Locastic\ApiPlatformTranslationBundle\Tests\EventListener;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
-use Locastic\ApiPlatformTranslationBundle\EventSubscriber\AssignLocaleSubscriber;
+use Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleSubscriber;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslatable;
@@ -104,7 +104,7 @@ class AssignLocaleSubscriberTest extends TestCase
     }
 
     /**
-     * setUp
+     * {@inheritdoc}
      */
     protected function setUp()
     {
