@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\EventListener;
 
-use Doctrine\ORM\Event\LifecycleEventArgs;
-use Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleSubscriber;
+use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleListener;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslatable;
@@ -13,11 +13,11 @@ use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslation;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class AssignLocaleSubscriberTest
+ * Class AssignLocaleListenerTest
  *
- * @package Locastic\ApiPlatformTranslationBundle\Tests\EventSubscriber
+ * @package Locastic\ApiPlatformTranslationBundle\Tests\EventListener
  */
-class AssignLocaleSubscriberTest extends TestCase
+class AssignLocaleListenerTest extends TestCase
 {
     /**
      * @var Translator
@@ -31,68 +31,68 @@ class AssignLocaleSubscriberTest extends TestCase
 
     /**
      * @test postLoad
-     * @dataProvider provideTranslatableEntities
+     * @dataProvider provideTranslatableObjects
      */
-    public function testPostLoad($entity)
+    public function testPostLoad($object)
     {
         $args = $this->createMock(LifecycleEventArgs::class);
-        $this->getEntityInfo($args, $entity);
+        $this->getObjectInfo($args, $object);
         $this->loadCurrentLocale();
 
-        $assignLocaleSubscriber = new AssignLocaleSubscriber($this->translator);
+        $assignLocaleSubscriber = new AssignLocaleListener($this->translator);
         $assignLocaleSubscriber->postLoad($args);
     }
 
     /**
      * @test postLoad
-     * @dataProvider provideNonTranslatableEntities
+     * @dataProvider provideNonTranslatableObjects
      */
-    public function testPostLoadNonTranslatableEntities($entity)
+    public function testPostLoadNonTranslatableObjects($object)
     {
         $args = $this->createMock(LifecycleEventArgs::class);
-        $this->getEntityInfo($args, $entity);
+        $this->getObjectInfo($args, $object);
 
-        $assignLocaleSubscriber = new AssignLocaleSubscriber($this->translator);
+        $assignLocaleSubscriber = new AssignLocaleListener($this->translator);
         $assignLocaleSubscriber->postLoad($args);
     }
 
     /**
      * @test postLoad
-     * @dataProvider provideTranslatableEntities
+     * @dataProvider provideTranslatableObjects
      */
-    public function testPrePersist($entity)
+    public function testPrePersist($object)
     {
         $args = $this->createMock(LifecycleEventArgs::class);
-        $this->getEntityInfo($args, $entity);
+        $this->getObjectInfo($args, $object);
         $this->loadCurrentLocale();
 
-        $assignLocaleSubscriber = new AssignLocaleSubscriber($this->translator);
+        $assignLocaleSubscriber = new AssignLocaleListener($this->translator);
         $assignLocaleSubscriber->prePersist($args);
     }
 
     /**
      * @test postLoad
-     * @dataProvider provideNonTranslatableEntities
+     * @dataProvider provideNonTranslatableObjects
      */
-    public function testPrePersistNonTranslatableEntities($entity)
+    public function testPrePersistNonTranslatableObjects($object)
     {
         $args = $this->createMock(LifecycleEventArgs::class);
-        $this->getEntityInfo($args, $entity);
+        $this->getObjectInfo($args, $object);
 
-        $assignLocaleSubscriber = new AssignLocaleSubscriber($this->translator);
+        $assignLocaleSubscriber = new AssignLocaleListener($this->translator);
         $assignLocaleSubscriber->postLoad($args);
     }
 
     /**
      * @param $args
-     * @param $entity
+     * @param $object
      */
-    private function getEntityInfo($args, $entity)
+    private function getObjectInfo($args, $object)
     {
         $args
             ->expects($this->once())
-            ->method('getEntity')
-            ->willReturn($entity);
+            ->method('getObject')
+            ->willReturn($object);
     }
 
     private function loadCurrentLocale()
@@ -115,7 +115,7 @@ class AssignLocaleSubscriberTest extends TestCase
     /**
      * @return \Generator
      */
-    public function provideTranslatableEntities()
+    public function provideTranslatableObjects()
     {
         yield[new DummyTranslatable()];
     }
@@ -123,7 +123,7 @@ class AssignLocaleSubscriberTest extends TestCase
     /**
      * @return \Generator
      */
-    public function provideNonTranslatableEntities()
+    public function provideNonTranslatableObjects()
     {
         yield[new DummyNotTranslatable()];
         yield[new DummyTranslation()];

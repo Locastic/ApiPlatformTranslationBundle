@@ -4,18 +4,16 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\EventListener;
 
-use Doctrine\Common\EventSubscriber;
 use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
-use Doctrine\ORM\Events;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
 /**
- * Class AssignLocaleSubscriber
+ * Class AssignLocaleListener
  *
- * @package Locastic\ApiPlatformTranslationBundle\EventSubscriber
+ * @package Locastic\ApiPlatformTranslationBundle\EventListener
  */
-class AssignLocaleListener implements EventSubscriber
+class AssignLocaleListener
 {
     /**
      * @var Translator
@@ -23,25 +21,13 @@ class AssignLocaleListener implements EventSubscriber
     private $translator;
 
     /**
-     * AssignLocaleSubscriber constructor.
+     * AssignLocaleListener constructor.
      *
      * @param Translator $translator
      */
     public function __construct(Translator $translator)
     {
         $this->translator = $translator;
-    }
-
-    /**
-     * {@inheritdoc}
-     * @codeCoverageIgnore
-     */
-    public function getSubscribedEvents(): array
-    {
-        return [
-            Events::postLoad,
-            Events::prePersist,
-        ];
     }
 
     /**
@@ -65,15 +51,15 @@ class AssignLocaleListener implements EventSubscriber
      */
     private function assignLocale(LifecycleEventArgs $args): void
     {
-        $entity = $args->getEntity();
+        $object = $args->getObject();
 
-        if (!$entity instanceof TranslatableInterface) {
+        if (!$object instanceof TranslatableInterface) {
             return;
         }
 
         $localeCode = $this->translator->loadCurrentLocale();
 
-        $entity->setCurrentLocale($localeCode);
-        $entity->setFallbackLocale($localeCode);
+        $object->setCurrentLocale($localeCode);
+        $object->setFallbackLocale($localeCode);
     }
 }
