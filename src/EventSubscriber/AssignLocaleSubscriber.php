@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Locastic\ApiPlatformTranslationBundle\EventSubscriber;
 
 use Doctrine\Common\EventSubscriber;

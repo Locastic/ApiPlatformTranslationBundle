@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Locastic\ApiTranslationBundle\Tests\Service;
 
 use Locastic\ApiPlatformTranslationBundle\Service\Translator;

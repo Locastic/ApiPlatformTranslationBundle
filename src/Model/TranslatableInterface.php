@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;

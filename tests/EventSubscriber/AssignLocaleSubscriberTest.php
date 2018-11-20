@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Locastic\ApiPlatformTranslationBundle\Tests\EventSubscriber;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
