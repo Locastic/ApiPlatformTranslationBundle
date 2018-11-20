@@ -6,7 +6,7 @@ namespace Locastic\ApiPlatformTranslationBundle\Tests\EventSubscriber;
 
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Locastic\ApiPlatformTranslationBundle\EventSubscriber\AssignLocaleSubscriber;
-use Locastic\ApiPlatformTranslationBundle\Service\Translator;
+use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslation;

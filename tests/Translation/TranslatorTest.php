@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Locastic\ApiTranslationBundle\Tests\Service;
+namespace Locastic\ApiTranslationBundle\Tests\Translation;
 
-use Locastic\ApiPlatformTranslationBundle\Service\Translator;
+use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,8 +13,9 @@ use Symfony\Component\Translation\TranslatorInterface;
 
 /**
  * Class TranslatorTest
- * @package UnitTests\TranslationBundle\Service
- * @covers \Locastic\ApiPlatformTranslationBundle\Service\Translator
+ *
+ * @package UnitTests\TranslationBundle\Translation
+ * @covers \Locastic\ApiPlatformTranslationBundle\Translation\Translator
  */
 class TranslatorTest extends TestCase
 {
@@ -34,7 +35,7 @@ class TranslatorTest extends TestCase
     private $defaultLocale;
 
     /**
-     * setUp
+     * {@inheritdoc}
      */
     protected function setUp()
     {
@@ -62,7 +63,7 @@ class TranslatorTest extends TestCase
             ->with($stringToTranslate, $parameters, $domain, $locale)
             ->willReturn($translation);
 
-        $actualTranslatedString = $translator->translate($stringToTranslate, [], $domain, $locale);
+        $actualTranslatedString = $translator->trans($stringToTranslate, [], $domain, $locale);
         $this->assertSame($translation, $actualTranslatedString);
     }
 
@@ -84,7 +85,7 @@ class TranslatorTest extends TestCase
             ->with($stringToTranslate, $parameters, $domain, $this->defaultLocale)
             ->willReturn($translation);
 
-        $actualTranslatedString = $translator->translate($stringToTranslate, [], $domain);
+        $actualTranslatedString = $translator->trans($stringToTranslate, [], $domain);
         $this->assertSame($translation, $actualTranslatedString);
     }
 

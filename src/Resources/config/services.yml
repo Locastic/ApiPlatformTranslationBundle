@@ -1,6 +1,6 @@
 services:
-    locastic_api_platform_translation.service.translator:
-        class: Locastic\ApiPlatformTranslationBundle\Service\Translator
+    locastic_api_platform_translation.translation.translator:
+        class: Locastic\ApiPlatformTranslationBundle\Translation\Translator
         arguments:
             - '@translator'
             - '@request_stack'
@@ -9,7 +9,7 @@ services:
     locastic_api_platform_translation.subscriber.assign_locale:
         class: Locastic\ApiPlatformTranslationBundle\EventSubscriber\AssignLocaleSubscriber
         arguments:
-            - '@locastic_api_platform_translation.service.translator'
+            - '@locastic_api_platform_translation.translation.translator'
         tags:
             - { name: doctrine.event_listener, event: postLoad }
             - { name: doctrine.event_listener, event: prePersist }
@@ -17,4 +17,5 @@ services:
 # Filters
     locastic_api_platform_translation.filter.translation_groups:
         parent: 'api_platform.serializer.group_filter'
-        tags:      [ { name: 'api_platform.filter', id: 'translation.groups' } ]
+        tags:
+            - { name: 'api_platform.filter', id: 'translation.groups' }

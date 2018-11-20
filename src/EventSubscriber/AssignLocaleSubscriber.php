@@ -8,7 +8,7 @@ use Doctrine\Common\EventSubscriber;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Doctrine\ORM\Events;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
-use Locastic\ApiPlatformTranslationBundle\Service\Translator;
+use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
 /**
  * Class AssignLocaleSubscriber
