@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 /**
@@ -10,7 +12,7 @@ namespace Locastic\ApiPlatformTranslationBundle\Model;
 class AbstractTranslation implements TranslationInterface
 {
     /**
-     * @var string
+     * @var null|string
      */
     protected $locale;
 
@@ -31,7 +33,7 @@ class AbstractTranslation implements TranslationInterface
     /**
      * {@inheritdoc}
      */
-    public function setTranslatable(TranslatableInterface $translatable = null): void
+    public function setTranslatable(?TranslatableInterface $translatable = null): void
     {
         if ($translatable === $this->translatable) {
             return;
@@ -62,7 +64,7 @@ class AbstractTranslation implements TranslationInterface
      * {@inheritdoc}
      * @codeCoverageIgnore
      */
-    public function setLocale($locale): void
+    public function setLocale(?string $locale): void
     {
         $this->locale = $locale;
     }

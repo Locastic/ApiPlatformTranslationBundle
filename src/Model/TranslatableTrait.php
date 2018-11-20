@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
@@ -23,7 +25,7 @@ trait TranslatableTrait
     protected $translationsCache = [];
 
     /**
-     * @var string
+     * @var null|string
      */
     protected $currentLocale;
 
@@ -35,7 +37,7 @@ trait TranslatableTrait
     protected $currentTranslation;
 
     /**
-     * @var string
+     * @var null|string
      */
     protected $fallbackLocale;
 
@@ -49,11 +51,13 @@ trait TranslatableTrait
     }
 
     /**
-     * @param string $locale
+     * @param null|string $locale
      *
      * @return TranslationInterface
+     *
+     * @throws \RuntimeException
      */
-    public function getTranslation($locale = null): ?TranslationInterface
+    public function getTranslation(?string $locale = null): TranslationInterface
     {
         $locale = $locale ?: $this->currentLocale;
         if (null === $locale) {
@@ -94,9 +98,9 @@ trait TranslatableTrait
     }
 
     /**
-     * @return array
+     * @return string[]
      */
-    public function getTranslationLocales()
+    public function getTranslationLocales(): array
     {
         $translations = $this->getTranslations();
         $locales = [];
@@ -111,12 +115,12 @@ trait TranslatableTrait
     /**
      * @param string $locale
      */
-    public function removeTranslationWithLocale(string $locale)
+    public function removeTranslationWithLocale(string $locale): void
     {
         $translations = $this->getTranslations();
 
         foreach ($translations as $translation) {
-            if ($translation->getLocale() == $locale) {
+            if ($translation->getLocale() === $locale) {
                 $this->removeTranslation($translation);
             }
         }
@@ -138,8 +142,8 @@ trait TranslatableTrait
     public function hasTranslation(TranslationInterface $translation): bool
     {
         return isset($this->translationsCache[$translation->getLocale()]) || $this->translations->containsKey(
-                $translation->getLocale()
-            );
+            $translation->getLocale()
+        );
     }
 
     /**
@@ -168,17 +172,17 @@ trait TranslatableTrait
     }
 
     /**
-     * @param string $currentLocale
+     * @param null|string $currentLocale
      */
-    public function setCurrentLocale($currentLocale): void
+    public function setCurrentLocale(?string $currentLocale): void
     {
         $this->currentLocale = $currentLocale;
     }
 
     /**
-     * @param string $fallbackLocale
+     * @param null|string $fallbackLocale
      */
-    public function setFallbackLocale($fallbackLocale): void
+    public function setFallbackLocale(?string $fallbackLocale): void
     {
         $this->fallbackLocale = $fallbackLocale;
     }
@@ -188,5 +192,5 @@ trait TranslatableTrait
      *
      * @return TranslationInterface
      */
-    abstract protected function createTranslation();
+    abstract protected function createTranslation(): TranslationInterface;
 }

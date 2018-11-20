@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 /**
@@ -21,6 +23,4 @@ abstract class AbstractTranslatable implements TranslatableInterface
     {
         $this->initializeTranslationsCollection();
     }
-
-    abstract protected function createTranslation();
 }

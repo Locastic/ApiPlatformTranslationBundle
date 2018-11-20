@@ -1,4 +1,7 @@
 <?php
+
+declare(strict_types=1);
+
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Fixtures;
 
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
