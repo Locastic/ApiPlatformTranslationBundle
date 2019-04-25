@@ -12,7 +12,7 @@ interface TranslationInterface
     /**
      * @return TranslatableInterface
      */
-    public function getTranslatable(): TranslatableInterface;
+    public function getTranslatable(): ?TranslatableInterface;
 
     /**
      * @param null|TranslatableInterface $translatable
