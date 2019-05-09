@@ -25,7 +25,7 @@ class AbstractTranslation implements TranslationInterface
      * {@inheritdoc}
      * @codeCoverageIgnore
      */
-    public function getTranslatable(): TranslatableInterface
+    public function getTranslatable(): ?TranslatableInterface
     {
         return $this->translatable;
     }

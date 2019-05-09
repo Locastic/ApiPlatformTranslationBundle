@@ -10,7 +10,8 @@
   ],
   "require": {
     "php": "^7.1",
-    "api-platform/api-pack": "^1.1"
+    "api-platform/api-pack": "^1.1",
+    "symfony/translation": "^4.2"
   },
   "require-dev": {
     "phpunit/phpunit": "^7.3"
