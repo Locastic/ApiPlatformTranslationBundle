@@ -10,6 +10,7 @@ services:
         class: Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleListener
         arguments:
             - '@locastic_api_platform_translation.translation.translator'
+            - '%kernel.default_locale%'
         tags:
             - { name: doctrine.event_listener, event: postLoad }
             - { name: doctrine.event_listener, event: prePersist }

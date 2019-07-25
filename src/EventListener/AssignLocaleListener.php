@@ -21,13 +21,20 @@ class AssignLocaleListener
     private $translator;
 
     /**
+     * @var string
+     */
+    private $defaultLocale;
+
+    /**
      * AssignLocaleListener constructor.
      *
      * @param Translator $translator
+     * @param string $defaultLocale
      */
-    public function __construct(Translator $translator)
+    public function __construct(Translator $translator, string $defaultLocale = 'en')
     {
         $this->translator = $translator;
+        $this->defaultLocale = $defaultLocale;
     }
 
     /**
@@ -60,6 +67,6 @@ class AssignLocaleListener
         $localeCode = $this->translator->loadCurrentLocale();
 
         $object->setCurrentLocale($localeCode);
-        $object->setFallbackLocale($localeCode);
+        $object->setFallbackLocale($this->defaultLocale);
     }
 }
