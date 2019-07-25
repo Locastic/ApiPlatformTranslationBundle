@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Criteria;
+use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\PersistentCollection;
 
 /**
@@ -68,8 +70,10 @@ trait TranslatableTrait
             return $this->translationsCache[$locale];
         }
 
-        $translation = $this->translations->get($locale);
-        if (null !== $translation) {
+        $expr = new Comparison('locale', '=', $locale);
+        $translation = $this->translations->matching(new Criteria($expr))->first();
+
+        if (false !== $translation) {
             $this->translationsCache[$locale] = $translation;
 
             return $translation;
@@ -79,9 +83,10 @@ trait TranslatableTrait
                 return $this->translationsCache[$this->fallbackLocale];
             }
 
-            $fallbackTranslation = $this->translations->get($this->fallbackLocale);
+            $expr = new Comparison('locale', '=', $this->fallbackLocale);
+            $fallbackTranslation = $this->translations->matching(new Criteria($expr))->first();
 
-            if (null !== $fallbackTranslation) {
+            if (false !== $fallbackTranslation) {
                 $this->translationsCache[$this->fallbackLocale] = $fallbackTranslation; //@codeCoverageIgnore
 
                 return $fallbackTranslation; //@codeCoverageIgnore
