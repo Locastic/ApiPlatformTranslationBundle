@@ -14,7 +14,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
  */
-class ApiTranslationExtension extends Extension
+class ApiPlatformTranslationExtension extends Extension
 {
     /**
      * {@inheritdoc}
@@ -30,6 +30,6 @@ class ApiTranslationExtension extends Extension
      */
     public function getAlias(): string
     {
-        return 'api_translation';
+        return 'api_platform_translation';
     }
 }
