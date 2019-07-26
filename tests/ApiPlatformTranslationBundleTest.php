@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Locastic\ApiTranslationBundle\Tests\Translation;
+namespace Locastic\ApiTranslationBundle\Tests;
 
 use Locastic\ApiPlatformTranslationBundle\ApiPlatformTranslationBundle;
 use PHPUnit\Framework\TestCase;
@@ -15,12 +15,12 @@ use PHPUnit\Framework\TestCase;
  */
 class ApiPlatformTranslationBundleTest extends TestCase
 {
-    public function testClassExist()
+    public function testClassExist(): void
     {
         $this->assertTrue(class_exists(ApiPlatformTranslationBundle::class));
     }
 
-    public function testExtensionIsLoaded()
+    public function testExtensionIsLoaded(): void
     {
         $bundle = new ApiPlatformTranslationBundle();
         $this->assertNotNull($bundle->getContainerExtension());
