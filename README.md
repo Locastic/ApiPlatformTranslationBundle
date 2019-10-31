@@ -170,6 +170,10 @@ Usage:
 
 `?locale=de`
 
+**Or use Accept-Language http header**
+
+`Accept-Language: de`
+
 **Serialization group for displaying all translations:** 
 
 `?groups[]=translations`
