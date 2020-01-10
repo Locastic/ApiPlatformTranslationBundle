@@ -99,7 +99,7 @@ class Post extends AbstractTranslatable
 Example Translation entity:
 ``` php
 use Symfony\Component\Serializer\Annotation\Groups;
-use Locastic\ApiTranslationBundle\Model\AbstractTranslation;
+use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
 
 class PostTranslation extends AbstractTranslation
 {
