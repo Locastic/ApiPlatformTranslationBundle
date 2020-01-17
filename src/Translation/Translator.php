@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Translation;
 
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Translation\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Class Translator
@@ -53,18 +53,6 @@ class Translator implements TranslatorInterface
         }
 
         return $this->translator->trans($id, $parameters, $domain, $locale);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function transChoice($id, $number, array $parameters = array(), $domain = null, $locale = null): string
-    {
-        if (!$locale) {
-            $locale = $this->loadCurrentLocale();
-        }
-
-        return $this->translator->transChoice($id, $number, $parameters, $domain, $locale);
     }
 
     /**

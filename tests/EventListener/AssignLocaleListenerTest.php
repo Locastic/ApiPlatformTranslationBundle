@@ -106,7 +106,7 @@ class AssignLocaleListenerTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->translator = $this->createMock(Translator::class);
         $this->defaultLocale = 'en';
