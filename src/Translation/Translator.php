@@ -48,7 +48,7 @@ class Translator implements TranslatorInterface
      */
     public function trans($id, array $parameters = array(), $domain = null, $locale = null): string
     {
-        if (!$locale) {
+        if ($locale === null) {
             $locale = $this->loadCurrentLocale();
         }
 
@@ -68,7 +68,7 @@ class Translator implements TranslatorInterface
 
         $localeCode = $request->query->get('locale');
 
-        if (!$localeCode) {
+        if ($localeCode === null) {
             $preferredLanguage = $request->getPreferredLanguage();
             $preferredLanguage = '' === $preferredLanguage ? null : $preferredLanguage;
 
