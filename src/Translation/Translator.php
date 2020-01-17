@@ -56,18 +56,6 @@ class Translator implements TranslatorInterface
     }
 
     /**
-     * {@inheritdoc}
-     */
-    public function transChoice($id, $number, array $parameters = array(), $domain = null, $locale = null): string
-    {
-        if (!$locale) {
-            $locale = $this->loadCurrentLocale();
-        }
-
-        return $this->translator->transChoice($id, $number, $parameters, $domain, $locale);
-    }
-
-    /**
      * @return string
      */
     public function loadCurrentLocale(): string
