@@ -37,7 +37,7 @@ class TranslatorTest extends TestCase
     /**
      * {@inheritdoc}
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         $this->defaultLocale = 'en';
         $this->translator = $this->createMock(TranslatorInterface::class);
