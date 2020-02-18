@@ -4,7 +4,7 @@ services:
         arguments:
             - '@translator'
             - '@request_stack'
-            - '%locale%'
+            - '%kernel.default_locale%'
 
     locastic_api_platform_translation.listener.assign_locale:
         class: Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleListener
