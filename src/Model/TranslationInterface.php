@@ -15,9 +15,9 @@ interface TranslationInterface
     public function getTranslatable(): ?TranslatableInterface;
 
     /**
-     * @param null|TranslatableInterface $translatable
+     * @param TranslatableInterface $translatable
      */
-    public function setTranslatable(?TranslatableInterface $translatable = null): void;
+    public function setTranslatable(?TranslatableInterface $translatable): void;
 
     /**
      * @return null|string
