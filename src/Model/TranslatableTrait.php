@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
 use Doctrine\ORM\PersistentCollection;
@@ -17,7 +18,7 @@ use Doctrine\ORM\PersistentCollection;
 trait TranslatableTrait
 {
     /**
-     * @var ArrayCollection|PersistentCollection|TranslationInterface[]
+     * @var Collection<TranslationInterface>|TranslationInterface[]
      */
     protected $translations;
 
@@ -53,9 +54,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param null|string $locale
-     *
-     * @return TranslationInterface
+     * {@inheritdoc}
      *
      * @throws \RuntimeException
      */
@@ -132,17 +131,15 @@ trait TranslatableTrait
     }
 
     /**
-     * @return ArrayCollection|TranslationInterface[]
+     * {@inheritdoc}
      */
-    public function getTranslations()
+    public function getTranslations(): Collection
     {
         return $this->translations;
     }
 
     /**
-     * @param TranslationInterface $translation
-     *
-     * @return bool
+     * {@inheritdoc}
      */
     public function hasTranslation(TranslationInterface $translation): bool
     {
@@ -152,7 +149,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param TranslationInterface $translation
+     * {@inheritdoc}
      */
     public function addTranslation(TranslationInterface $translation): void
     {
@@ -165,7 +162,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param TranslationInterface $translation
+     * {@inheritdoc}
      */
     public function removeTranslation(TranslationInterface $translation): void
     {
@@ -177,7 +174,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param null|string $currentLocale
+     * {@inheritdoc}
      */
     public function setCurrentLocale(?string $currentLocale): void
     {
@@ -185,7 +182,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param null|string $fallbackLocale
+     * {@inheritdoc}
      */
     public function setFallbackLocale(?string $fallbackLocale): void
     {

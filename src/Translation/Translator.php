@@ -46,7 +46,7 @@ class Translator implements TranslatorInterface
     /**
      * {@inheritdoc}
      */
-    public function trans($id, array $parameters = array(), $domain = null, $locale = null): string
+    public function trans($id, array $parameters = array(), string $domain = null, string $locale = null): string
     {
         if (!$locale) {
             $locale = $this->loadCurrentLocale();

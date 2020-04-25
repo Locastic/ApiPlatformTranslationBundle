@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Interface TranslatableInterface
@@ -14,9 +14,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 interface TranslatableInterface
 {
     /**
-     * @return ArrayCollection|TranslationInterface[]
+     * @return Collection<TranslationInterface>|TranslationInterface[]
      */
-    public function getTranslations();
+    public function getTranslations(): Collection;
 
     /**
      * @param null|string $locale
