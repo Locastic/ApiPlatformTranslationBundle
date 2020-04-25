@@ -224,4 +224,4 @@ If you have idea on how to improve this bundle, feel free to contribute. If you 
 
 ## Support
 
-Want us to help you with this bundle or any Api Platfrom/Symfony project? Write us an email on info@locastic.com
+Want us to help you with this bundle or any Api Platform/Symfony project? Write us an email on info@locastic.com
