@@ -30,22 +30,23 @@ Implementation:
 **Translatable entity:**
 
 - Extend your model/resource with `Locastic\ApiTranslationBundle\Model\AbstractTranslatable`
-- Add createTranslation method which returns new object of translation Entity. Example:
+- Add `createTranslation()` method which returns new object of translation Entity. Example:
 ``` php
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
+use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 
 class Post extends AbstractTranslatable
 {
     // ...
     
-    protected function createTranslation()
+    protected function createTranslation(): TranslationInterface
     {
         return new PostTranslation();
     }
 }
 ```
 
-- Add `translations` serialization group to translations relation:
+- Add your a `translations`-property. Add the `translations` serializations group and make a connection to the translation entity:
 ``` php
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
 
@@ -54,6 +55,8 @@ class Post extends AbstractTranslatable
     // ...
     
     /**
+     * @ORM\OneToMany(targetEntity="PostTranslation", mappedBy="translatable", fetch="EXTRA_LAZY", indexBy="locale", cascade={"PERSIST"}, orphanRemoval=true)
+     *
      * @Groups({"post_write", "translations"})
      */
     protected $translations;
@@ -71,20 +74,16 @@ class Post extends AbstractTranslatable
     // ...
     
     /**
-    * @var string
-    *
     * @Groups({"post_read"})
     */
     private $title;
     
-    public function setTitle($title)
+    public function setTitle(string $title)
     {
         $this->getTranslation()->setTitle($title);
-
-        return $this;
     }
 
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->getTranslation()->getTitle();
     }
@@ -104,28 +103,32 @@ use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
 class PostTranslation extends AbstractTranslation
 {
     // ...
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Post", inversedBy="translations")
+     */
+    protected $translatable;
     
     /**
-     * @var string
-     *
+     * @ORM\Column(type="string")
+     * 
      * @Groups({"post_read", "post_write", "translations"})
      */
     private $title;
     
     /**
-     * @var string
+     * @ORM\Column(type="string")
+     *
      * @Groups({"post_write", "translations"})
      */
     protected $locale;
 
-    public function setTitle($title)
+    public function setTitle(string $title): void
     {
         $this->title = $title;
-
-        return $this;
     }
 
-    public function getTitle()
+    public function getTitle(): ?string
     {
         return $this->title;
     }
