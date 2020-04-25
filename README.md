@@ -46,7 +46,7 @@ class Post extends AbstractTranslatable
 }
 ```
 
-- Add your a `translations`-property. Add the `translations` serializations group and make a connection to the translation entity:
+- Add a `translations`-property. Add the `translations` serializations group and make a connection to the translation entity:
 ``` php
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
 
