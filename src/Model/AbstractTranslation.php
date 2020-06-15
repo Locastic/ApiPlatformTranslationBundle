@@ -33,7 +33,7 @@ class AbstractTranslation implements TranslationInterface
     /**
      * {@inheritdoc}
      */
-    public function setTranslatable(?TranslatableInterface $translatable = null): void
+    public function setTranslatable(?TranslatableInterface $translatable): void
     {
         if ($translatable === $this->translatable) {
             return;
