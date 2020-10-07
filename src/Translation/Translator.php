@@ -74,7 +74,7 @@ class Translator implements TranslatorInterface
 
         $preferredLanguage = $request->getPreferredLanguage();
 
-        return '' === $preferredLanguage ? $this->defaultLocale : $preferredLanguage;
+        return empty($preferredLanguage) ? $this->defaultLocale : $preferredLanguage;
     }
 
     /**
