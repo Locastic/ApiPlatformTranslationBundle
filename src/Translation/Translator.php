@@ -68,14 +68,13 @@ class Translator implements TranslatorInterface
 
         $localeCode = $request->query->get('locale');
 
-        if (!$localeCode) {
-            $preferredLanguage = $request->getPreferredLanguage();
-            $preferredLanguage = '' === $preferredLanguage ? null : $preferredLanguage;
-
-            return $preferredLanguage ?? $this->defaultLocale;
+        if ($localeCode) {
+            return $localeCode;
         }
 
-        return $localeCode;
+        $preferredLanguage = $request->getPreferredLanguage();
+
+        return empty($preferredLanguage) ? $this->defaultLocale : $preferredLanguage;
     }
 
     /**
