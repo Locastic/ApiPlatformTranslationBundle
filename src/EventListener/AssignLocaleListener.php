@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\EventListener;
 
-use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\Common\EventArgs;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
@@ -25,38 +25,23 @@ class AssignLocaleListener
      */
     private $defaultLocale;
 
-    /**
-     * AssignLocaleListener constructor.
-     *
-     * @param Translator $translator
-     * @param string $defaultLocale
-     */
     public function __construct(Translator $translator, string $defaultLocale = 'en')
     {
         $this->translator = $translator;
         $this->defaultLocale = $defaultLocale;
     }
 
-    /**
-     * @param LifecycleEventArgs $args
-     */
-    public function postLoad(LifecycleEventArgs $args): void
+    public function postLoad(EventArgs $args): void
     {
         $this->assignLocale($args);
     }
 
-    /**
-     * @param LifecycleEventArgs $args
-     */
-    public function prePersist(LifecycleEventArgs $args): void
+    public function prePersist(EventArgs $args): void
     {
         $this->assignLocale($args);
     }
 
-    /**
-     * @param LifecycleEventArgs $args
-     */
-    private function assignLocale(LifecycleEventArgs $args): void
+    private function assignLocale(EventArgs $args): void
     {
         $object = $args->getObject();
 
