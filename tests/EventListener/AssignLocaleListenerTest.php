@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\EventListener;
 
-use Doctrine\Common\Persistence\Event\LifecycleEventArgs;
+use Doctrine\Common\EventArgs;
+use Doctrine\ORM\Event\LifecycleEventArgs;
 use Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleListener;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;

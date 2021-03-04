@@ -1,11 +1,11 @@
 language: php
 
-dist: trusty
+dist: xenial
 
 sudo: false
 
 php:
-    - 7.3.5
+    - 8.0.2
 
 cache:
     directories:
