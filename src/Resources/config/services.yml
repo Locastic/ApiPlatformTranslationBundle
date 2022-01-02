@@ -18,5 +18,9 @@ services:
 # Filters
     locastic_api_platform_translation.filter.translation_groups:
         parent: 'api_platform.serializer.group_filter'
+        arguments:
+            - 'groups'
+            - false
+            - ['translations']
         tags:
             - { name: 'api_platform.filter', id: 'translation.groups' }
