@@ -24,7 +24,7 @@ class Translator implements TranslatorInterface
      */
     public function trans($id, array $parameters = [], string $domain = null, string $locale = null): string
     {
-        if (!$locale) {
+        if ($locale === null) {
             $locale = $this->loadCurrentLocale();
         }
 
@@ -48,14 +48,6 @@ class Translator implements TranslatorInterface
         $preferredLanguage = $request->getPreferredLanguage();
 
         return empty($preferredLanguage) ? $this->defaultLocale : $preferredLanguage;
-    }
-
-    /**
-     * @codeCoverageIgnore
-     */
-    public function setLocale($locale = 'en'): void
-    {
-        $this->translator->setLocale($locale);
     }
 
     /**
