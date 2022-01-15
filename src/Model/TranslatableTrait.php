@@ -8,7 +8,6 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
-use Doctrine\ORM\PersistentCollection;
 
 /**
  * @see TranslatableInterface
@@ -20,32 +19,19 @@ trait TranslatableTrait
     /**
      * @var Collection<TranslationInterface>|TranslationInterface[]
      */
-    protected $translations;
-
+    private array|Collection|ArrayCollection $translations;
     /**
      * @var array|TranslationInterface[]
      */
-    protected $translationsCache = [];
-
-    /**
-     * @var null|string
-     */
-    protected $currentLocale;
-
+    private array $translationsCache = [];
+    private ?string $currentLocale;
     /**
      * Cache current translation. Useful in Doctrine 2.4+
-     *
-     * @var TranslationInterface
      */
-    protected $currentTranslation;
+    private TranslationInterface $currentTranslation;
+    private ?string $fallbackLocale;
 
     /**
-     * @var null|string
-     */
-    protected $fallbackLocale;
-
-    /**
-     * TranslatableTrait constructor.
      * @codeCoverageIgnore
      */
     public function __construct()
@@ -91,6 +77,7 @@ trait TranslatableTrait
                 return $fallbackTranslation; //@codeCoverageIgnore
             }
         }
+
         $translation = $this->createTranslation();
         $translation->setLocale($locale);
 
@@ -138,19 +125,12 @@ trait TranslatableTrait
         return $this->translations;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function hasTranslation(TranslationInterface $translation): bool
     {
-        return isset($this->translationsCache[$translation->getLocale()]) || $this->translations->containsKey(
-            $translation->getLocale()
-        );
+        return isset($this->translationsCache[$translation->getLocale()])
+               || $this->translations->containsKey($translation->getLocale());
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function addTranslation(TranslationInterface $translation): void
     {
         if (!$this->hasTranslation($translation)) {
@@ -161,9 +141,6 @@ trait TranslatableTrait
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function removeTranslation(TranslationInterface $translation): void
     {
         if ($this->translations->removeElement($translation)) {
@@ -173,17 +150,11 @@ trait TranslatableTrait
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setCurrentLocale(?string $currentLocale): void
     {
         $this->currentLocale = $currentLocale;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setFallbackLocale(?string $fallbackLocale): void
     {
         $this->fallbackLocale = $fallbackLocale;
@@ -191,8 +162,6 @@ trait TranslatableTrait
 
     /**
      * Create resource translation model.
-     *
-     * @return TranslationInterface
      */
     abstract protected function createTranslation(): TranslationInterface;
 }

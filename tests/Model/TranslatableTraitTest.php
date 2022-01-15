@@ -18,7 +18,7 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslationLocales
      */
-    public function testGetTranslationLocales()
+    public function testGetTranslationLocales(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $this->setTranslation('es', 'espanol', $dummyTranslatable);
@@ -30,7 +30,7 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslation
      */
-    public function testGetTranslationFromTranslationsCache()
+    public function testGetTranslationFromTranslationsCache(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslatable->addTranslation($this->setTranslation('en', 'english', $dummyTranslatable));
@@ -40,7 +40,7 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslation
      */
-    public function testGetTranslationWithoutFallbackLocale()
+    public function testGetTranslationWithoutFallbackLocale(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $this->assertEquals(null, $dummyTranslatable->getTranslation('it')->getTranslation());
@@ -49,7 +49,7 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslation
      */
-    public function testGetTranslationWithFallbackTranslation()
+    public function testGetTranslationWithFallbackTranslation(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslatable->addTranslation($this->setTranslation('en', 'english', $dummyTranslatable));
@@ -59,7 +59,7 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslation
      */
-    public function testRemoveTranslation()
+    public function testRemoveTranslation(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslationEnglish = $this->setTranslation('en', 'english', $dummyTranslatable);
@@ -71,7 +71,7 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslation
      */
-    public function testGetTranslationWithoutLocales()
+    public function testGetTranslationWithoutLocales(): void
     {
         $dummyTranslatable = $this->setTranslatable(null, null);
 
@@ -79,18 +79,10 @@ class TranslatableTraitTest extends TestCase
         $dummyTranslatable->getTranslation();
     }
 
-    /**
-     * @param $locale
-     * @param $translation
-     * @param TranslatableInterface $translatable
-     * @return DummyTranslation
-     */
-    private function setTranslation($locale, $translation, TranslatableInterface $translatable)
+    private function setTranslation(string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
     {
-        $dummyTranslation = new DummyTranslation();
-        $dummyTranslation->setLocale($locale);
+        $dummyTranslation = new DummyTranslation($locale, $translatable);
         $dummyTranslation->setTranslation($translation);
-        $dummyTranslation->setTranslatable($translatable);
 
         return $dummyTranslation;
     }
@@ -100,7 +92,7 @@ class TranslatableTraitTest extends TestCase
      * @param $fallbackLocale
      * @return DummyTranslatable
      */
-    private function setTranslatable($currentLocale, $fallbackLocale)
+    private function setTranslatable($currentLocale, $fallbackLocale): DummyTranslatable
     {
         $dummyTranslatable = new DummyTranslatable();
         $dummyTranslatable->setCurrentLocale($currentLocale);

@@ -8,8 +8,6 @@ use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 
 /**
- * Class DummyTranslatable
- *
  * @package Locastic\ApiPlatformTranslationBundle\Tests\Fixtures
  */
 class DummyTranslatable extends AbstractTranslatable
@@ -19,6 +17,6 @@ class DummyTranslatable extends AbstractTranslatable
      */
     protected function createTranslation(): TranslationInterface
     {
-        return new DummyTranslation();
+        return new DummyTranslation('en', null);
     }
 }
