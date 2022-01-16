@@ -64,7 +64,7 @@ trait TranslatableTrait
         }
 
         // Check and return fallback Translation from Translatable objects' cache or attempt fallback locale match
-        return $this->translationsCache[$this->fallbackLocale] ?? $this->matchTranslation($this->fallbackLocale);
+        return $this->matchTranslation($this->fallbackLocale);
     }
 
     /**
