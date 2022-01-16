@@ -14,7 +14,7 @@ class AbstractTranslation implements TranslationInterface
     private ?TranslatableInterface $translatable = null;
 
     public function __construct(
-        private ?string $locale,
+        private string $locale,
         ?TranslatableInterface $translatable
     ) {
         $this->setTranslatable($translatable);
