@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Model;
 
+use Locastic\ApiPlatformTranslationBundle\Model\LocaleNotSupported;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslation;
@@ -68,6 +69,12 @@ class TranslatableTraitTest extends TestCase
         $this->assertEquals(null, $dummyTranslatable->getTranslation('en')?->getTranslation());
     }
 
+    public function testGetNullWithUnsupportedLocale(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+        $this->assertNull($dummyTranslatable->getTranslation('unsupported'));
+    }
+
     /**
      * @test getTranslation
      */
@@ -75,7 +82,7 @@ class TranslatableTraitTest extends TestCase
     {
         $dummyTranslatable = $this->setTranslatable();
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(LocaleNotSupported::class);
         $dummyTranslatable->getTranslation();
     }
 
