@@ -9,12 +9,12 @@ namespace Locastic\ApiPlatformTranslationBundle\Model;
  *
  * @package Locastic\ApiPlatformTranslationBundle\Model
  */
-class AbstractTranslation implements TranslationInterface
+abstract class AbstractTranslation implements TranslationInterface
 {
     private ?TranslatableInterface $translatable = null;
 
     public function __construct(
-        private string $locale,
+        protected string $locale,
         ?TranslatableInterface $translatable
     ) {
         $this->setTranslatable($translatable);
