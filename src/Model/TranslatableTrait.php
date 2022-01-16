@@ -17,9 +17,10 @@ use Doctrine\Common\Collections\Expr\Comparison;
 trait TranslatableTrait
 {
     /**
+     * Protected to allow access in classes using this Trait or extending provided AbstractTranslatable
      * @var Collection<TranslationInterface>|TranslationInterface[]
      */
-    private array|Collection|ArrayCollection $translations;
+    protected array|Collection|ArrayCollection $translations;
     /**
      * @var array|TranslationInterface[]
      */
@@ -94,10 +95,9 @@ trait TranslatableTrait
      */
     public function getTranslationLocales(): array
     {
-        $translations = $this->getTranslations();
         $locales = [];
 
-        foreach ($translations as $translation) {
+        foreach ($this->getTranslations() as $translation) {
             $locales[] = $translation->getLocale();
         }
 
