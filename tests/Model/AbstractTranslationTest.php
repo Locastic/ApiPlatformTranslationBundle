@@ -43,13 +43,11 @@ class AbstractTranslationTest extends TestCase
     /**
      * @test setTranslatable
      */
-    public function testGetFallbackTranslationWithoutLocaleParameter(): void
+    public function testGetNullWithoutLocaleParameter(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
 
-        $dummyTranslationEnglish = $this->setTranslation('en', 'english', $dummyTranslatable);
-
-        $this->assertSame($dummyTranslationEnglish, $dummyTranslatable->getTranslation());
+        $this->assertNull($dummyTranslatable->getTranslation());
     }
 
     /**

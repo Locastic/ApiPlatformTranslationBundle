@@ -34,7 +34,7 @@ class TranslatableTraitTest extends TestCase
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslatable->addTranslation($this->setTranslation('en', 'english', $dummyTranslatable));
-        $this->assertEquals('english', $dummyTranslatable->getTranslation('en')->getTranslation());
+        $this->assertEquals('english', $dummyTranslatable->getTranslation('en')?->getTranslation());
     }
 
     /**
@@ -43,7 +43,7 @@ class TranslatableTraitTest extends TestCase
     public function testGetTranslationWithoutFallbackLocale(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
-        $this->assertEquals(null, $dummyTranslatable->getTranslation('it')->getTranslation());
+        $this->assertEquals(null, $dummyTranslatable->getTranslation('it')?->getTranslation());
     }
 
     /**
@@ -53,7 +53,7 @@ class TranslatableTraitTest extends TestCase
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslatable->addTranslation($this->setTranslation('en', 'english', $dummyTranslatable));
-        $this->assertEquals('english', $dummyTranslatable->getTranslation('it')->getTranslation());
+        $this->assertEquals('english', $dummyTranslatable->getTranslation('it')?->getTranslation());
     }
 
     /**
@@ -65,7 +65,7 @@ class TranslatableTraitTest extends TestCase
         $dummyTranslationEnglish = $this->setTranslation('en', 'english', $dummyTranslatable);
 
         $dummyTranslatable->removeTranslation($dummyTranslationEnglish);
-        $this->assertEquals(null, $dummyTranslatable->getTranslation('en')->getTranslation());
+        $this->assertEquals(null, $dummyTranslatable->getTranslation('en')?->getTranslation());
     }
 
     /**
@@ -73,7 +73,7 @@ class TranslatableTraitTest extends TestCase
      */
     public function testGetTranslationWithoutLocales(): void
     {
-        $dummyTranslatable = $this->setTranslatable(null, null);
+        $dummyTranslatable = $this->setTranslatable();
 
         $this->expectException(\RuntimeException::class);
         $dummyTranslatable->getTranslation();
@@ -87,12 +87,7 @@ class TranslatableTraitTest extends TestCase
         return $dummyTranslation;
     }
 
-    /**
-     * @param $currentLocale
-     * @param $fallbackLocale
-     * @return DummyTranslatable
-     */
-    private function setTranslatable($currentLocale, $fallbackLocale): DummyTranslatable
+    private function setTranslatable(string $currentLocale = null, string $fallbackLocale = null): DummyTranslatable
     {
         $dummyTranslatable = new DummyTranslatable();
         $dummyTranslatable->setCurrentLocale($currentLocale);
