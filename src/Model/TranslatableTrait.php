@@ -51,7 +51,7 @@ trait TranslatableTrait
             throw LocaleNotSupported::unsupported();
         }
 
-        // Grab translation from Translatable objects' available Translations
+        // Attempt to grab Translation from Translatable object
         $translation = $this->matchTranslation($locale);
         if ($translation instanceof TranslationInterface) {
             return $translation;
@@ -63,7 +63,6 @@ trait TranslatableTrait
             return null;
         }
 
-        // Check and return fallback Translation from Translatable objects' cache or attempt fallback locale match
         return $this->matchTranslation($this->fallbackLocale);
     }
 
