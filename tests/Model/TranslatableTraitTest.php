@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Model;
 
+use Locastic\ApiPlatformTranslationBundle\Model\LocaleNotSupported;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslation;
@@ -18,7 +19,7 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslationLocales
      */
-    public function testGetTranslationLocales()
+    public function testGetTranslationLocales(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $this->setTranslation('es', 'espanol', $dummyTranslatable);
@@ -30,77 +31,70 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslation
      */
-    public function testGetTranslationFromTranslationsCache()
+    public function testGetTranslationFromTranslationsCache(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslatable->addTranslation($this->setTranslation('en', 'english', $dummyTranslatable));
-        $this->assertEquals('english', $dummyTranslatable->getTranslation('en')->getTranslation());
+        $this->assertEquals('english', $dummyTranslatable->getTranslation('en')?->getTranslation());
     }
 
     /**
      * @test getTranslation
      */
-    public function testGetTranslationWithoutFallbackLocale()
+    public function testGetTranslationWithoutFallbackLocale(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
-        $this->assertEquals(null, $dummyTranslatable->getTranslation('it')->getTranslation());
+        $this->assertEquals(null, $dummyTranslatable->getTranslation('it')?->getTranslation());
     }
 
     /**
      * @test getTranslation
      */
-    public function testGetTranslationWithFallbackTranslation()
+    public function testGetTranslationWithFallbackTranslation(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslatable->addTranslation($this->setTranslation('en', 'english', $dummyTranslatable));
-        $this->assertEquals('english', $dummyTranslatable->getTranslation('it')->getTranslation());
+        $this->assertEquals('english', $dummyTranslatable->getTranslation('it')?->getTranslation());
     }
 
     /**
      * @test getTranslation
      */
-    public function testRemoveTranslation()
+    public function testRemoveTranslation(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslationEnglish = $this->setTranslation('en', 'english', $dummyTranslatable);
 
         $dummyTranslatable->removeTranslation($dummyTranslationEnglish);
-        $this->assertEquals(null, $dummyTranslatable->getTranslation('en')->getTranslation());
+        $this->assertEquals(null, $dummyTranslatable->getTranslation('en')?->getTranslation());
+    }
+
+    public function testGetNullWithUnsupportedLocale(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+        $this->assertNull($dummyTranslatable->getTranslation('unsupported'));
     }
 
     /**
      * @test getTranslation
      */
-    public function testGetTranslationWithoutLocales()
+    public function testGetTranslationWithoutLocales(): void
     {
-        $dummyTranslatable = $this->setTranslatable(null, null);
+        $dummyTranslatable = $this->setTranslatable();
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(LocaleNotSupported::class);
         $dummyTranslatable->getTranslation();
     }
 
-    /**
-     * @param $locale
-     * @param $translation
-     * @param TranslatableInterface $translatable
-     * @return DummyTranslation
-     */
-    private function setTranslation($locale, $translation, TranslatableInterface $translatable)
+    private function setTranslation(string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
     {
-        $dummyTranslation = new DummyTranslation();
-        $dummyTranslation->setLocale($locale);
+        $dummyTranslation = new DummyTranslation($locale, $translatable);
         $dummyTranslation->setTranslation($translation);
-        $dummyTranslation->setTranslatable($translatable);
 
         return $dummyTranslation;
     }
 
-    /**
-     * @param $currentLocale
-     * @param $fallbackLocale
-     * @return DummyTranslatable
-     */
-    private function setTranslatable($currentLocale, $fallbackLocale)
+    private function setTranslatable(string $currentLocale = null, string $fallbackLocale = null): DummyTranslatable
     {
         $dummyTranslatable = new DummyTranslatable();
         $dummyTranslatable->setCurrentLocale($currentLocale);

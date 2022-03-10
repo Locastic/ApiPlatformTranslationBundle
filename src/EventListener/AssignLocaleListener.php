@@ -9,26 +9,14 @@ use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
 /**
- * Class AssignLocaleListener
- *
  * @package Locastic\ApiPlatformTranslationBundle\EventListener
  */
 class AssignLocaleListener
 {
-    /**
-     * @var Translator
-     */
-    private $translator;
-
-    /**
-     * @var string
-     */
-    private $defaultLocale;
-
-    public function __construct(Translator $translator, string $defaultLocale = 'en')
-    {
-        $this->translator = $translator;
-        $this->defaultLocale = $defaultLocale;
+    public function __construct(
+        private Translator $translator,
+        private string $defaultLocale = 'en'
+    ) {
     }
 
     public function postLoad(EventArgs $args): void

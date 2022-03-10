@@ -18,7 +18,7 @@ class AbstractTranslationTest extends TestCase
     /**
      * @test setTranslatable
      */
-    public function testSetTranslatable()
+    public function testSetTranslatable(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslationEspanol = $this->setTranslation('es', 'espanol', $dummyTranslatable);
@@ -31,7 +31,7 @@ class AbstractTranslationTest extends TestCase
     /**
      * @test setTranslatable
      */
-    public function testGetCurrentTranslationWithoutLocaleParameter()
+    public function testGetCurrentTranslationWithoutLocaleParameter(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
         $dummyTranslationEspanol = $this->setTranslation('es', 'espanol', $dummyTranslatable);
@@ -43,19 +43,17 @@ class AbstractTranslationTest extends TestCase
     /**
      * @test setTranslatable
      */
-    public function testGetFallbackTranslationWithoutLocaleParameter()
+    public function testGetNullWithoutLocaleParameter(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
 
-        $dummyTranslationEnglish = $this->setTranslation('en', 'english', $dummyTranslatable);
-
-        $this->assertSame($dummyTranslationEnglish, $dummyTranslatable->getTranslation());
+        $this->assertNull($dummyTranslatable->getTranslation());
     }
 
     /**
      * @test setTranslatable
      */
-    public function testChangeTranslation()
+    public function testChangeTranslation(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
 
@@ -66,15 +64,12 @@ class AbstractTranslationTest extends TestCase
         $this->assertSame('english2', $dummyTranslatable->getTranslation('en')->getTranslation());
     }
 
-    /**
-     * @param $locale
-     * @param $translation
-     * @param TranslatableInterface $translatable
-     * @return DummyTranslation
-     */
-    private function setTranslation($locale, $translation, TranslatableInterface $translatable)
-    {
-        $dummyTranslation = new DummyTranslation();
+    private function setTranslation(
+        string $locale,
+        string $translation,
+        TranslatableInterface $translatable
+    ): DummyTranslation {
+        $dummyTranslation = new DummyTranslation('en', null);
         $dummyTranslation->setLocale($locale);
         $dummyTranslation->setTranslation($translation);
         $dummyTranslation->setTranslatable($translatable);
@@ -82,12 +77,7 @@ class AbstractTranslationTest extends TestCase
         return $dummyTranslation;
     }
 
-    /**
-     * @param $currentLocale
-     * @param $fallbackLocale
-     * @return DummyTranslatable
-     */
-    private function setTranslatable($currentLocale, $fallbackLocale)
+    private function setTranslatable(string $currentLocale, string $fallbackLocale): DummyTranslatable
     {
         $dummyTranslatable = new DummyTranslatable();
         $dummyTranslatable->setCurrentLocale($currentLocale);

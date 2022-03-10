@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Locastic\ApiTranslationBundle\Tests\Translation;
+namespace Locastic\ApiPlatformTranslationBundle\Tests\Translation;
 
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
@@ -12,27 +12,14 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Class TranslatorTest
- *
  * @package UnitTests\TranslationBundle\Translation
  * @covers \Locastic\ApiPlatformTranslationBundle\Translation\Translator
  */
 class TranslatorTest extends TestCase
 {
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
-
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-
-    /**
-     * @var string
-     */
-    private $defaultLocale;
+    private TranslatorInterface|\PHPUnit\Framework\MockObject\MockObject $translator;
+    private \PHPUnit\Framework\MockObject\MockObject|RequestStack $requestStack;
+    private string $defaultLocale;
 
     /**
      * {@inheritdoc}
@@ -54,7 +41,7 @@ class TranslatorTest extends TestCase
         $domain,
         $locale,
         $translation
-    ) {
+    ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
 
         $this->translator
@@ -76,7 +63,7 @@ class TranslatorTest extends TestCase
         $parameters,
         $domain,
         $translation
-    ) {
+    ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
 
         $this->translator
@@ -96,7 +83,7 @@ class TranslatorTest extends TestCase
     public function testLoadCurrentLocale(
         $requestedLocale,
         $expectedLocale
-    ) {
+    ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
 
         $request = $this->createMock(Request::class);
@@ -124,7 +111,7 @@ class TranslatorTest extends TestCase
         $requestedLocale,
         $acceptedLanguage,
         $expectedLocale
-    ) {
+    ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
 
         $request = $this->createConfiguredMock(Request::class, [
@@ -149,7 +136,7 @@ class TranslatorTest extends TestCase
     /**
      * @test loadCurrentLocale
      */
-    public function testLoadCurrentLocaleWithNoRequest()
+    public function testLoadCurrentLocaleWithNoRequest(): void
     {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
 
@@ -164,10 +151,7 @@ class TranslatorTest extends TestCase
         $this->assertSame('en', $actualLocale);
     }
 
-    /**
-     * @return \Generator
-     */
-    public function provideTranslations()
+    public function provideTranslations(): \Generator
     {
         yield['hello_world', [], 'messages', 'en', 'Hello world!'];
         yield['hello_world', [], 'messages', 'hr', 'Dobar dan svijete!'];
@@ -181,19 +165,13 @@ class TranslatorTest extends TestCase
         yield['dateMessage', [], 'validators', 'en', 'This value is not a valid date.'];
     }
 
-    /**
-     * @return \Generator
-     */
-    public function provideTranslationsNoLocale()
+    public function provideTranslationsNoLocale(): \Generator
     {
         yield['hello_world', [], 'messages', 'Hello world!'];
         yield['dateMessage', [], 'validators', 'This value is not a valid date.'];
     }
 
-    /**
-     * @return \Generator
-     */
-    public function provideLocales()
+    public function provideLocales(): \Generator
     {
         yield['en', 'en'];
         yield['hr', 'hr'];
@@ -201,10 +179,7 @@ class TranslatorTest extends TestCase
         yield[null, 'en'];
     }
 
-    /**
-     * @return \Generator
-     */
-    public function provideLocalesWithAcceptLanguage()
+    public function provideLocalesWithAcceptLanguage(): \Generator
     {
         yield['en', 'fr', 'en'];
         yield['hr', 'de', 'hr'];
