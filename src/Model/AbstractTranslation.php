@@ -11,11 +11,11 @@ namespace Locastic\ApiPlatformTranslationBundle\Model;
  */
 abstract class AbstractTranslation implements TranslationInterface
 {
-    private ?TranslatableInterface $translatable = null;
+    protected ?TranslatableInterface $translatable = null;
 
     public function __construct(
-        protected string $locale,
-        ?TranslatableInterface $translatable
+        protected ?string $locale = null,
+        ?TranslatableInterface $translatable = null
     ) {
         $this->setTranslatable($translatable);
     }
@@ -45,7 +45,7 @@ abstract class AbstractTranslation implements TranslationInterface
     /**
      * @codeCoverageIgnore
      */
-    public function getLocale(): string
+    public function getLocale(): ?string
     {
         return $this->locale;
     }
@@ -53,7 +53,7 @@ abstract class AbstractTranslation implements TranslationInterface
     /**
      * @codeCoverageIgnore
      */
-    public function setLocale(string $locale): void
+    public function setLocale(?string $locale): void
     {
         $this->locale = $locale;
     }

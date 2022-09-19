@@ -6,6 +6,7 @@ namespace Locastic\ApiPlatformTranslationBundle\EventListener;
 
 use Doctrine\Common\EventArgs;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
+use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
 /**
@@ -32,14 +33,20 @@ class AssignLocaleListener
     private function assignLocale(EventArgs $args): void
     {
         $object = $args->getObject();
+        $localeCode = $this->translator->loadCurrentLocale();
 
-        if (!$object instanceof TranslatableInterface) {
+        if ($object instanceof TranslatableInterface) {
+            $object->setCurrentLocale($localeCode);
+            $object->setFallbackLocale($this->defaultLocale);
+
             return;
         }
 
-        $localeCode = $this->translator->loadCurrentLocale();
+        // fill the locale where it's missing
+        if ($object instanceof TranslationInterface && !$object->getLocale()) {
+            $object->setLocale($localeCode);
 
-        $object->setCurrentLocale($localeCode);
-        $object->setFallbackLocale($this->defaultLocale);
+            return;
+        }
     }
 }

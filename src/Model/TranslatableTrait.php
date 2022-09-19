@@ -18,19 +18,15 @@ trait TranslatableTrait
 {
     /**
      * Protected to allow access in classes using this Trait or extending provided AbstractTranslatable
-     * @var Collection<TranslationInterface>|TranslationInterface[]
+     * @var Collection<TranslationInterface>
      */
-    protected array|Collection|ArrayCollection $translations;
+    protected Collection $translations;
     /**
      * @var array|TranslationInterface[]
      */
-    private array $translationsCache = [];
-    private ?string $currentLocale;
-    /**
-     * Cache current translation. Useful in Doctrine 2.4+
-     */
-    private TranslationInterface $currentTranslation;
-    private ?string $fallbackLocale;
+    protected array $translationsCache = [];
+    protected ?string $currentLocale = null;
+    protected ?string $fallbackLocale = null;
 
     /**
      * @codeCoverageIgnore
@@ -52,31 +48,15 @@ trait TranslatableTrait
             throw new \RuntimeException('No locale has been set and current locale is undefined.');
         }
 
-        if (isset($this->translationsCache[$locale])) {
-            return $this->translationsCache[$locale];
-        }
-
-        $expr = new Comparison('locale', '=', $locale);
-        $translation = $this->translations->matching(new Criteria($expr))->first();
-
-        if (false !== $translation) {
-            $this->translationsCache[$locale] = $translation;
-
+        $translation = $this->matchTranslation($locale);
+        if (null !== $translation) {
             return $translation;
         }
 
         if ($locale !== $this->fallbackLocale) {
-            if (isset($this->translationsCache[$this->fallbackLocale])) {
-                return $this->translationsCache[$this->fallbackLocale];
-            }
-
-            $expr = new Comparison('locale', '=', $this->fallbackLocale);
-            $fallbackTranslation = $this->translations->matching(new Criteria($expr))->first();
-
-            if (false !== $fallbackTranslation) {
-                $this->translationsCache[$this->fallbackLocale] = $fallbackTranslation; //@codeCoverageIgnore
-
-                return $fallbackTranslation; //@codeCoverageIgnore
+            $fallbackTranslation = $this->matchTranslation($this->fallbackLocale);
+            if (null !== $fallbackTranslation) {
+                return $fallbackTranslation;
             }
         }
 
@@ -88,6 +68,24 @@ trait TranslatableTrait
         $this->translationsCache[$locale] = $translation;
 
         return $translation;
+    }
+
+    private function matchTranslation(string $locale): ?TranslationInterface
+    {
+        if (isset($this->translationsCache[$locale])) {
+            return $this->translationsCache[$locale];
+        }
+
+        $expr = new Comparison('locale', '=', $locale);
+        $translation = $this->translations->matching(new Criteria($expr))->first();
+
+        if ($translation instanceof TranslationInterface) {
+            $this->translationsCache[$locale] = $translation;
+
+            return $translation;
+        }
+
+        return null;
     }
 
     /**
