@@ -17,6 +17,6 @@ class DummyTranslatable extends AbstractTranslatable
      */
     protected function createTranslation(): TranslationInterface
     {
-        return new DummyTranslation('en', null);
+        return new DummyTranslation();
     }
 }

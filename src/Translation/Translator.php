@@ -31,6 +31,14 @@ class Translator implements TranslatorInterface
         return $this->translator->trans($id, $parameters, $domain, $locale);
     }
 
+    /**
+     * @codeCoverageIgnore
+     */
+    public function setLocale($locale = 'en'): void
+    {
+        $this->translator->setLocale($locale);
+    }
+
     public function loadCurrentLocale(): string
     {
         $request = $this->requestStack->getCurrentRequest();

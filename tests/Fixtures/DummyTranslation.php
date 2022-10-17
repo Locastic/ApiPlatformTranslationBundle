@@ -12,13 +12,7 @@ use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
  */
 class DummyTranslation extends AbstractTranslation
 {
-    public function __construct(
-        string $locale,
-        ?TranslatableInterface $translatable = null,
-        private ?string $translation = null
-    ) {
-        parent::__construct($locale, $translatable);
-    }
+    private ?string $translation = null;
 
     public function setTranslation(string $translation): DummyTranslation
     {

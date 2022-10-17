@@ -124,8 +124,6 @@ trait TranslatableTrait
         foreach ($translations as $translation) {
             if ($translation->getLocale() === $locale) {
                 $this->removeTranslation($translation);
-
-                $translation->setTranslatable(null);
             }
         }
     }
