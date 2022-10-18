@@ -12,7 +12,7 @@ namespace Locastic\ApiPlatformTranslationBundle\Model;
 abstract class AbstractTranslation implements TranslationInterface
 {
     protected ?TranslatableInterface $translatable = null;
-
+    protected ?string $locale = null;
     /**
      * @codeCoverageIgnore
      */
