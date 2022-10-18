@@ -111,6 +111,6 @@ class AssignLocaleListenerTest extends TestCase
     public function provideNonTranslatableObjects(): \Generator
     {
         yield [new DummyNotTranslatable()];
-        yield [new DummyTranslation('en', null)];
+        yield [new DummyTranslation()];
     }
 }

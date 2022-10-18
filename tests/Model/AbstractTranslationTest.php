@@ -71,7 +71,7 @@ class AbstractTranslationTest extends TestCase
         string $translation,
         TranslatableInterface $translatable
     ): DummyTranslation {
-        $dummyTranslation = new DummyTranslation('en', null);
+        $dummyTranslation = new DummyTranslation();
         $dummyTranslation->setLocale($locale);
         $dummyTranslation->setTranslation($translation);
         $dummyTranslation->setTranslatable($translatable);

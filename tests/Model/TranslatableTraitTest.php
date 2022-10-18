@@ -81,8 +81,10 @@ class TranslatableTraitTest extends TestCase
 
     private function setTranslation(string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
     {
-        $dummyTranslation = new DummyTranslation($locale, $translatable);
+        $dummyTranslation = new DummyTranslation();
+        $dummyTranslation->setLocale($locale);
         $dummyTranslation->setTranslation($translation);
+        $dummyTranslation->setTranslatable($translatable);
 
         return $dummyTranslation;
     }
