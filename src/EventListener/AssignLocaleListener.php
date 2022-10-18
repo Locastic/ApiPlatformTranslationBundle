@@ -33,20 +33,13 @@ class AssignLocaleListener
     private function assignLocale(EventArgs $args): void
     {
         $object = $args->getObject();
+
+        if (!$object instanceof TranslatableInterface) {
+            return;
+        }
+
         $localeCode = $this->translator->loadCurrentLocale();
-
-        if ($object instanceof TranslatableInterface) {
-            $object->setCurrentLocale($localeCode);
-            $object->setFallbackLocale($this->defaultLocale);
-
-            return;
-        }
-
-        // fill the locale where it's missing
-        if ($object instanceof TranslationInterface && !$object->getLocale()) {
-            $object->setLocale($localeCode);
-
-            return;
-        }
+        $object->setCurrentLocale($localeCode);
+        $object->setFallbackLocale($this->defaultLocale);
     }
 }

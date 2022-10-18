@@ -13,13 +13,6 @@ abstract class AbstractTranslation implements TranslationInterface
 {
     protected ?TranslatableInterface $translatable = null;
 
-    public function __construct(
-        protected ?string $locale = null,
-        ?TranslatableInterface $translatable = null
-    ) {
-        $this->setTranslatable($translatable);
-    }
-
     /**
      * @codeCoverageIgnore
      */
