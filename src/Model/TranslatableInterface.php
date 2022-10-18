@@ -7,48 +7,43 @@ namespace Locastic\ApiPlatformTranslationBundle\Model;
 use Doctrine\Common\Collections\Collection;
 
 /**
- * Interface TranslatableInterface
- *
  * @package Locastic\ApiPlatformTranslationBundle\Model
+ * @template T of TranslationInterface
  */
 interface TranslatableInterface
 {
     /**
-     * @return Collection<TranslationInterface>|TranslationInterface[]
+     * @return Collection<string, TranslationInterface>
+     * @psalm-return Collection<string, T>
      */
     public function getTranslations(): Collection;
 
     /**
-     * @param null|string $locale
-     *
+     * @param string|null $locale
      * @return TranslationInterface
+     * @psalm-return T
      */
     public function getTranslation(?string $locale = null): TranslationInterface;
 
     /**
      * @param TranslationInterface $translation
-     *
+     * @psalm-param T $translation
      * @return bool
      */
     public function hasTranslation(TranslationInterface $translation): bool;
 
     /**
      * @param TranslationInterface $translation
+     * @psalm-param T $translation
      */
     public function addTranslation(TranslationInterface $translation): void;
 
     /**
      * @param TranslationInterface $translation
+     * @psalm-param T $translation
      */
     public function removeTranslation(TranslationInterface $translation): void;
 
-    /**
-     * @param null|string $locale
-     */
     public function setCurrentLocale(?string $locale): void;
-
-    /**
-     * @param null|string $locale
-     */
     public function setFallbackLocale(?string $locale): void;
 }

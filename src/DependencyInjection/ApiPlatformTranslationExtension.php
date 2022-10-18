@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\DependencyInjection;
 
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
  * This is the class that loads and manages your bundle configuration
@@ -21,13 +21,13 @@ class ApiPlatformTranslationExtension extends Extension
      */
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $directory =
+            __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'Resources' . DIRECTORY_SEPARATOR . 'config';
+
+        $loader = new Loader\YamlFileLoader($container, new FileLocator($directory));
         $loader->load('services.yml');
     }
 
-    /**
-     * @return string
-     */
     public function getAlias(): string
     {
         return 'api_platform_translation';

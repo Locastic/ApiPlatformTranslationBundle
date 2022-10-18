@@ -9,20 +9,11 @@ namespace Locastic\ApiPlatformTranslationBundle\Model;
  *
  * @package Locastic\ApiPlatformTranslationBundle\Model
  */
-class AbstractTranslation implements TranslationInterface
+abstract class AbstractTranslation implements TranslationInterface
 {
-    /**
-     * @var null|string
-     */
-    protected $locale;
+    protected ?TranslatableInterface $translatable = null;
 
     /**
-     * @var TranslatableInterface
-     */
-    protected $translatable;
-
-    /**
-     * {@inheritdoc}
      * @codeCoverageIgnore
      */
     public function getTranslatable(): ?TranslatableInterface
@@ -30,9 +21,6 @@ class AbstractTranslation implements TranslationInterface
         return $this->translatable;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function setTranslatable(?TranslatableInterface $translatable): void
     {
         if ($translatable === $this->translatable) {
@@ -42,17 +30,12 @@ class AbstractTranslation implements TranslationInterface
         $previousTranslatable = $this->translatable;
         $this->translatable = $translatable;
 
-        if (null !== $previousTranslatable) {
-            $previousTranslatable->removeTranslation($this);
-        }
+        $previousTranslatable?->removeTranslation($this);
 
-        if (null !== $translatable) {
-            $translatable->addTranslation($this);
-        }
+        $translatable?->addTranslation($this);
     }
 
     /**
-     * {@inheritdoc}
      * @codeCoverageIgnore
      */
     public function getLocale(): ?string
@@ -61,7 +44,6 @@ class AbstractTranslation implements TranslationInterface
     }
 
     /**
-     * {@inheritdoc}
      * @codeCoverageIgnore
      */
     public function setLocale(?string $locale): void

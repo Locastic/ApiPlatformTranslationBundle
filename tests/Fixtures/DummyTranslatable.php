@@ -8,8 +8,6 @@ use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 
 /**
- * Class DummyTranslatable
- *
  * @package Locastic\ApiPlatformTranslationBundle\Tests\Fixtures
  */
 class DummyTranslatable extends AbstractTranslatable

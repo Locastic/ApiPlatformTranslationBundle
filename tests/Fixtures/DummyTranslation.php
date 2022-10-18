@@ -5,26 +5,15 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Fixtures;
 
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
+use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 
 /**
- * Class DummyTranslation
- *
  * @package Locastic\ApiPlatformTranslationBundle\Tests\Fixtures
  */
 class DummyTranslation extends AbstractTranslation
 {
-    /**
-     * @var null|string
-     */
-    private $translation;
+    private ?string $translation = null;
 
-    /**
-     * Set translation
-     *
-     * @param string $translation
-     *
-     * @return DummyTranslation
-     */
     public function setTranslation(string $translation): DummyTranslation
     {
         $this->translation = $translation;
@@ -32,11 +21,6 @@ class DummyTranslation extends AbstractTranslation
         return $this;
     }
 
-    /**
-     * Get translation
-     *
-     * @return null|string
-     */
     public function getTranslation(): ?string
     {
         return $this->translation;

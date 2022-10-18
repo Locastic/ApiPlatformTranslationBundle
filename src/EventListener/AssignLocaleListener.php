@@ -6,29 +6,18 @@ namespace Locastic\ApiPlatformTranslationBundle\EventListener;
 
 use Doctrine\Common\EventArgs;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
+use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
 /**
- * Class AssignLocaleListener
- *
  * @package Locastic\ApiPlatformTranslationBundle\EventListener
  */
 class AssignLocaleListener
 {
-    /**
-     * @var Translator
-     */
-    private $translator;
-
-    /**
-     * @var string
-     */
-    private $defaultLocale;
-
-    public function __construct(Translator $translator, string $defaultLocale = 'en')
-    {
-        $this->translator = $translator;
-        $this->defaultLocale = $defaultLocale;
+    public function __construct(
+        private Translator $translator,
+        private string $defaultLocale = 'en'
+    ) {
     }
 
     public function postLoad(EventArgs $args): void
@@ -50,7 +39,6 @@ class AssignLocaleListener
         }
 
         $localeCode = $this->translator->loadCurrentLocale();
-
         $object->setCurrentLocale($localeCode);
         $object->setFallbackLocale($this->defaultLocale);
     }

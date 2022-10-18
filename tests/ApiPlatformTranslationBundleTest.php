@@ -2,14 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Locastic\ApiTranslationBundle\Tests;
+namespace Locastic\ApiPlatformTranslationBundle\Tests;
 
 use Locastic\ApiPlatformTranslationBundle\ApiPlatformTranslationBundle;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class ApiPlatformTranslationBundleTest
- *
  * @package UnitTests\TranslationBundle
  * @covers \Locastic\ApiPlatformTranslationBundle\ApiPlatformTranslationBundle
  */

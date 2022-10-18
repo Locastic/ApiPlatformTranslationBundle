@@ -4,37 +4,27 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\EventListener;
 
-use Doctrine\Common\EventArgs;
 use Doctrine\ORM\Event\LifecycleEventArgs;
 use Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleListener;
-use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslation;
+use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class AssignLocaleListenerTest
- *
  * @package Locastic\ApiPlatformTranslationBundle\Tests\EventListener
  */
 class AssignLocaleListenerTest extends TestCase
 {
-    /**
-     * @var Translator
-     */
-    private $translator;
-
-    /**
-     * @var string
-     */
-    private $defaultLocale;
+    private Translator|\PHPUnit\Framework\MockObject\MockObject $translator;
+    private string $defaultLocale;
 
     /**
      * @test postLoad
      * @dataProvider provideTranslatableObjects
      */
-    public function testPostLoad($object)
+    public function testPostLoad($object): void
     {
         $args = $this->createMock(LifecycleEventArgs::class);
         $this->getObjectInfo($args, $object);
@@ -48,7 +38,7 @@ class AssignLocaleListenerTest extends TestCase
      * @test postLoad
      * @dataProvider provideNonTranslatableObjects
      */
-    public function testPostLoadNonTranslatableObjects($object)
+    public function testPostLoadNonTranslatableObjects($object): void
     {
         $args = $this->createMock(LifecycleEventArgs::class);
         $this->getObjectInfo($args, $object);
@@ -61,7 +51,7 @@ class AssignLocaleListenerTest extends TestCase
      * @test postLoad
      * @dataProvider provideTranslatableObjects
      */
-    public function testPrePersist($object)
+    public function testPrePersist($object): void
     {
         $args = $this->createMock(LifecycleEventArgs::class);
         $this->getObjectInfo($args, $object);
@@ -75,7 +65,7 @@ class AssignLocaleListenerTest extends TestCase
      * @test postLoad
      * @dataProvider provideNonTranslatableObjects
      */
-    public function testPrePersistNonTranslatableObjects($object)
+    public function testPrePersistNonTranslatableObjects($object): void
     {
         $args = $this->createMock(LifecycleEventArgs::class);
         $this->getObjectInfo($args, $object);
@@ -88,7 +78,7 @@ class AssignLocaleListenerTest extends TestCase
      * @param $args
      * @param $object
      */
-    private function getObjectInfo($args, $object)
+    private function getObjectInfo($args, $object): void
     {
         $args
             ->expects($this->once())
@@ -96,7 +86,7 @@ class AssignLocaleListenerTest extends TestCase
             ->willReturn($object);
     }
 
-    private function loadCurrentLocale()
+    private function loadCurrentLocale(): void
     {
         $this->translator
             ->expects($this->once())
@@ -113,20 +103,14 @@ class AssignLocaleListenerTest extends TestCase
         $this->defaultLocale = 'en';
     }
 
-    /**
-     * @return \Generator
-     */
-    public function provideTranslatableObjects()
+    public function provideTranslatableObjects(): \Generator
     {
-        yield[new DummyTranslatable()];
+        yield [new DummyTranslatable()];
     }
 
-    /**
-     * @return \Generator
-     */
-    public function provideNonTranslatableObjects()
+    public function provideNonTranslatableObjects(): \Generator
     {
-        yield[new DummyNotTranslatable()];
-        yield[new DummyTranslation()];
+        yield [new DummyNotTranslatable()];
+        yield [new DummyTranslation()];
     }
 }
