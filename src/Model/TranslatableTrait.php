@@ -145,7 +145,7 @@ trait TranslatableTrait
     public function hasTranslation(TranslationInterface $translation): bool
     {
         return isset($this->translationsCache[$translation->getLocale()])
-               || $this->translations->containsKey($translation->getLocale());
+               || (null !== $translation->getLocale() && $this->translations->containsKey($translation->getLocale()));
     }
 
     /**
