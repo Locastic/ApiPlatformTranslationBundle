@@ -18,6 +18,17 @@ class TranslatableTraitTest extends TestCase
     /**
      * @test getTranslationLocales
      */
+    public function testSetTranslatable(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+        $this->setTranslation(null, 'no locale', $dummyTranslatable);
+
+        $this->assertEquals([], $dummyTranslatable->getTranslationLocales());
+    }
+
+    /**
+     * @test getTranslationLocales
+     */
     public function testGetTranslationLocales(): void
     {
         $dummyTranslatable = $this->setTranslatable('es', 'en');
@@ -79,7 +90,7 @@ class TranslatableTraitTest extends TestCase
         $dummyTranslatable->getTranslation();
     }
 
-    private function setTranslation(string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
+    private function setTranslation(?string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
     {
         $dummyTranslation = new DummyTranslation();
         $dummyTranslation->setLocale($locale);

@@ -144,8 +144,11 @@ trait TranslatableTrait
      */
     public function hasTranslation(TranslationInterface $translation): bool
     {
-        return isset($this->translationsCache[$translation->getLocale()])
-               || (null !== $translation->getLocale() && $this->translations->containsKey($translation->getLocale()));
+        return null !== $translation->getLocale()
+            && (
+                isset($this->translationsCache[$translation->getLocale()])
+                || $this->translations->containsKey($translation->getLocale())
+            );
     }
 
     /**
@@ -155,7 +158,7 @@ trait TranslatableTrait
      */
     public function addTranslation(TranslationInterface $translation): void
     {
-        if (!$this->hasTranslation($translation)) {
+        if (!$this->hasTranslation($translation) && null !== $translation->getLocale()) {
             $this->translationsCache[$translation->getLocale()] = $translation;
 
             $this->translations->set($translation->getLocale(), $translation);
@@ -170,7 +173,7 @@ trait TranslatableTrait
      */
     public function removeTranslation(TranslationInterface $translation): void
     {
-        if ($this->translations->removeElement($translation)) {
+        if ($this->translations->removeElement($translation) && null !== $translation->getLocale()) {
             unset($this->translationsCache[$translation->getLocale()]);
 
             $translation->setTranslatable(null);
