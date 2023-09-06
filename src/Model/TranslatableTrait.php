@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Common\Collections\Expr\Comparison;
+use Doctrine\Persistence\Proxy;
 
 /**
  * @see TranslatableInterface
@@ -50,6 +51,10 @@ trait TranslatableTrait
      */
     public function getTranslation(?string $locale = null): TranslationInterface
     {
+        if ($this instanceof Proxy && !$this->__isInitialized()) {
+            $this->__load();
+        }
+
         $locale = $locale ?: $this->currentLocale;
         if (null === $locale) {
             throw new \RuntimeException('No locale has been set and current locale is undefined.');
