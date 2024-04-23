@@ -6,7 +6,6 @@ namespace Locastic\ApiPlatformTranslationBundle\EventListener;
 
 use Doctrine\Common\EventArgs;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
-use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
 /**
