@@ -2,9 +2,11 @@ filter:
     paths: [ 'src/*' ]
 
 build:
-    image: default-bionic
-    environment:
-        php: 8.1.2
+    nodes:
+        analysis:
+            image: default-bionic
+            environment:
+                php: 8.1
 
 checks:
     php:
