@@ -86,18 +86,12 @@ class TranslatorTest extends TestCase
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
 
-        $request = $this->createMock(Request::class);
-        $request->query = $this->createMock(ParameterBag::class);
+        $request = new Request(['locale' => $requestedLocale]);
+
         $this->requestStack
             ->expects($this->once())
             ->method('getCurrentRequest')
             ->willReturn($request);
-
-        $request->query
-            ->expects($this->once())
-            ->method('get')
-            ->with('locale')
-            ->willReturn($requestedLocale);
 
         $actualLocale = $translator->loadCurrentLocale();
         $this->assertSame($expectedLocale, $actualLocale);
@@ -114,20 +108,19 @@ class TranslatorTest extends TestCase
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
 
-        $request = $this->createConfiguredMock(Request::class, [
-            'getPreferredLanguage' => $acceptedLanguage
-        ]);
-        $request->query = $this->createMock(ParameterBag::class);
+        $request = $this->getMockBuilder(Request::class)
+            ->setConstructorArgs([
+                    ['locale' => $requestedLocale]
+            ])
+            ->onlyMethods(['getPreferredLanguage'])
+            ->getMock();
+
+        $request->method('getPreferredLanguage')->willReturn($acceptedLanguage);
+
         $this->requestStack
             ->expects($this->once())
             ->method('getCurrentRequest')
             ->willReturn($request);
-
-        $request->query
-            ->expects($this->once())
-            ->method('get')
-            ->with('locale')
-            ->willReturn($requestedLocale);
 
         $actualLocale = $translator->loadCurrentLocale();
         $this->assertSame($expectedLocale, $actualLocale);
