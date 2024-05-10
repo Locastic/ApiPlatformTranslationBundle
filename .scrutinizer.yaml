@@ -11,10 +11,7 @@ coding_style:
 
 build:
     nodes:
-        analysis:
-            image: default-bionic
-            environment:
-                php: 8.1
-            tests:
-                override:
-                    - php-scrutinizer-run
+        main:
+            before_commands:
+                - sudo apt-get update
+                - sudo apt-get install -y openssl
