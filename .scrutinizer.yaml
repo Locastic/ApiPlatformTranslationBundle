@@ -1,6 +1,11 @@
 filter:
     paths: [ 'src/*' ]
 
+build:
+    image: default-bionic
+    environment:
+        php: 8.1.2
+
 checks:
     php:
         code_rating: true
