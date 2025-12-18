@@ -22,7 +22,7 @@ class Translator implements TranslatorInterface
     /**
      * {@inheritdoc}
      */
-    public function trans($id, array $parameters = [], string $domain = null, string $locale = null): string
+    public function trans($id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
     {
         if ($locale === null) {
             $locale = $this->loadCurrentLocale();
