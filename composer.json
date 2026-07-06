@@ -10,12 +10,12 @@
     }
   ],
   "require": {
-    "php": ">=8.4",
-    "api-platform/symfony": "^4.2",
-    "doctrine/orm": "^3.5",
-    "doctrine/doctrine-bundle": "^3.1",
-    "symfony/translation": "*",
-    "symfony/dependency-injection": "*"
+    "php": "^8.2",
+    "api-platform/symfony": "^3.4 || ^4.0",
+    "doctrine/orm": "^3.0",
+    "doctrine/doctrine-bundle": "^2.13 || ^3.0",
+    "symfony/translation": "^6.4 || ^7.0 || ^8.0",
+    "symfony/dependency-injection": "^6.4 || ^7.0 || ^8.0"
   },
   "require-dev": {
     "phpunit/phpunit": "^10.5"
@@ -33,13 +33,10 @@
   },
   "extra": {
     "branch-alias": {
-      "dev-master": "1.0-dev"
+      "dev-master": "2.0-dev"
     }
   },
   "config": {
     "bin-dir": "bin"
-  },
-  "conflict": {
-    "symfony/translations-contracts": "<2.0"
   }
 }

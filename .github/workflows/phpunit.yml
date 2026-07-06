@@ -7,33 +7,29 @@ on:
     branches: [ master ]
 
 jobs:
-  symfony-tests:
+  tests:
     runs-on: ubuntu-latest
+    name: PHP ${{ matrix.php-versions }} ${{ matrix.dependencies }}
     strategy:
+      fail-fast: false
       matrix:
-        php-versions: ['8.4', '8.5']
+        php-versions: ['8.2', '8.3', '8.4', '8.5']
+        dependencies: ['highest']
+        include:
+          - php-versions: '8.2'
+            dependencies: 'lowest'
     steps:
+    - uses: actions/checkout@v4
     - uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-versions }}
-    - uses: actions/checkout@v4
-    - name: Copy .env.test.local
-      run: php -r "file_exists('.env.test.local') || copy('.env.test', '.env.test.local');"
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v4
-      with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ matrix.php-versions }}-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
-    - name: Install Dependencies
-      run: composer install --no-interaction --prefer-dist
-    - name: Create Database
-      run: |
-        mkdir -p data
-        touch data/database.sqlite
-    - name: Execute tests (Unit and Feature tests) via PHPUnit
-      env:
-        DATABASE_URL: sqlite:///%kernel.project_dir%/data/database.sqlite
-      run: vendor/phpunit/phpunit/phpunit
+    - name: Install dependencies (highest)
+      if: matrix.dependencies == 'highest'
+      run: composer update --no-interaction --prefer-dist
+    - name: Install dependencies (lowest)
+      if: matrix.dependencies == 'lowest'
+      run: composer update --no-interaction --prefer-dist --prefer-lowest --prefer-stable
+    - name: Validate composer.json
+      run: composer validate --strict
+    - name: Run tests
+      run: bin/phpunit
