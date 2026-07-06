@@ -12,9 +12,6 @@ use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslation;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
 
-/**
- * @package Locastic\ApiPlatformTranslationBundle\Tests\EventListener
- */
 class AssignLocaleListenerTest extends TestCase
 {
     private Translator|\PHPUnit\Framework\MockObject\MockObject $translator;
@@ -22,6 +19,7 @@ class AssignLocaleListenerTest extends TestCase
 
     /**
      * @test postLoad
+     *
      * @dataProvider provideTranslatableObjects
      */
     public function testPostLoad($object): void
@@ -36,6 +34,7 @@ class AssignLocaleListenerTest extends TestCase
 
     /**
      * @test postLoad
+     *
      * @dataProvider provideNonTranslatableObjects
      */
     public function testPostLoadNonTranslatableObjects($object): void
@@ -49,6 +48,7 @@ class AssignLocaleListenerTest extends TestCase
 
     /**
      * @test postLoad
+     *
      * @dataProvider provideTranslatableObjects
      */
     public function testPrePersist($object): void
@@ -63,6 +63,7 @@ class AssignLocaleListenerTest extends TestCase
 
     /**
      * @test postLoad
+     *
      * @dataProvider provideNonTranslatableObjects
      */
     public function testPrePersistNonTranslatableObjects($object): void
@@ -74,10 +75,6 @@ class AssignLocaleListenerTest extends TestCase
         $assignLocaleSubscriber->postLoad($args);
     }
 
-    /**
-     * @param $args
-     * @param $object
-     */
     private function getObjectInfo($args, $object): void
     {
         $args
@@ -94,9 +91,6 @@ class AssignLocaleListenerTest extends TestCase
             ->willReturn($this->defaultLocale);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->translator = $this->createMock(Translator::class);

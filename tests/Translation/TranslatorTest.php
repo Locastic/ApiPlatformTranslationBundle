@@ -6,13 +6,11 @@ namespace Locastic\ApiPlatformTranslationBundle\Tests\Translation;
 
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * @package UnitTests\TranslationBundle\Translation
  * @covers \Locastic\ApiPlatformTranslationBundle\Translation\Translator
  */
 class TranslatorTest extends TestCase
@@ -22,9 +20,6 @@ class TranslatorTest extends TestCase
     private string $defaultLocale;
     private array $enabledLocales;
 
-    /**
-     * {@inheritdoc}
-     */
     protected function setUp(): void
     {
         $this->defaultLocale = 'en';
@@ -35,6 +30,7 @@ class TranslatorTest extends TestCase
 
     /**
      * @test translate
+     *
      * @dataProvider provideTranslations
      */
     public function testTranslate(
@@ -42,7 +38,7 @@ class TranslatorTest extends TestCase
         $parameters,
         $domain,
         $locale,
-        $translation
+        $translation,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
@@ -58,13 +54,14 @@ class TranslatorTest extends TestCase
 
     /**
      * @test translate
+     *
      * @dataProvider provideTranslations
      */
     public function testTranslateWithNoLocale(
         $stringToTranslate,
         $parameters,
         $domain,
-        $translation
+        $translation,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
@@ -80,11 +77,12 @@ class TranslatorTest extends TestCase
 
     /**
      * @test loadCurrentLocale
+     *
      * @dataProvider provideLocales
      */
     public function testLoadCurrentLocale(
         $requestedLocale,
-        $expectedLocale
+        $expectedLocale,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
@@ -101,12 +99,13 @@ class TranslatorTest extends TestCase
 
     /**
      * @test loadCurrentLocale
+     *
      * @dataProvider provideLocalesWithAcceptLanguage
      */
     public function testLoadAcceptedLanguagesHeader(
         $requestedLocale,
         $acceptedLanguage,
-        $expectedLocale
+        $expectedLocale,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
@@ -175,44 +174,44 @@ class TranslatorTest extends TestCase
 
     public function provideTranslations(): \Generator
     {
-        yield['hello_world', [], 'messages', 'en', 'Hello world!'];
-        yield['hello_world', [], 'messages', 'hr', 'Dobar dan svijete!'];
-        yield[
+        yield ['hello_world', [], 'messages', 'en', 'Hello world!'];
+        yield ['hello_world', [], 'messages', 'hr', 'Dobar dan svijete!'];
+        yield [
             'dateMessage',
             [],
             'validators',
             'hr',
             'Ova vrijednost nije valjani datum',
         ];
-        yield['dateMessage', [], 'validators', 'en', 'This value is not a valid date.'];
+        yield ['dateMessage', [], 'validators', 'en', 'This value is not a valid date.'];
     }
 
     public function provideTranslationsNoLocale(): \Generator
     {
-        yield['hello_world', [], 'messages', 'Hello world!'];
-        yield['dateMessage', [], 'validators', 'This value is not a valid date.'];
+        yield ['hello_world', [], 'messages', 'Hello world!'];
+        yield ['dateMessage', [], 'validators', 'This value is not a valid date.'];
     }
 
     public function provideLocales(): \Generator
     {
-        yield['en', 'en'];
-        yield['hr', 'hr'];
-        yield['', 'en'];
-        yield[null, 'en'];
-        yield['nl', 'en']; // Locale not enabled
+        yield ['en', 'en'];
+        yield ['hr', 'hr'];
+        yield ['', 'en'];
+        yield [null, 'en'];
+        yield ['nl', 'en']; // Locale not enabled
     }
 
     public function provideLocalesWithAcceptLanguage(): \Generator
     {
-        yield['en', 'fr', 'en'];
-        yield['hr', 'de', 'hr'];
-        yield['', 'fr', 'fr'];
-        yield['de', '', 'en']; // Query param locale not enabled
-        yield[null, 'it', 'it'];
-        yield['nl', null, 'en']; // Query param locale not enabled
-        yield['', '', 'en'];
-        yield[null, null, 'en'];
-        yield[null, 'fr_FR', 'fr'];
-        yield[null, 'es', 'en']; // Accept-Language locale not enabled
+        yield ['en', 'fr', 'en'];
+        yield ['hr', 'de', 'hr'];
+        yield ['', 'fr', 'fr'];
+        yield ['de', '', 'en']; // Query param locale not enabled
+        yield [null, 'it', 'it'];
+        yield ['nl', null, 'en']; // Query param locale not enabled
+        yield ['', '', 'en'];
+        yield [null, null, 'en'];
+        yield [null, 'fr_FR', 'fr'];
+        yield [null, 'es', 'en']; // Accept-Language locale not enabled
     }
 }

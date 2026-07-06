@@ -5,14 +5,13 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 /**
- * Class AbstractTranslation
- *
- * @package Locastic\ApiPlatformTranslationBundle\Model
+ * Class AbstractTranslation.
  */
 abstract class AbstractTranslation implements TranslationInterface
 {
     protected ?TranslatableInterface $translatable = null;
     protected ?string $locale = null;
+
     /**
      * @codeCoverageIgnore
      */

@@ -8,7 +8,6 @@ use Locastic\ApiPlatformTranslationBundle\ApiPlatformTranslationBundle;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @package UnitTests\TranslationBundle
  * @covers \Locastic\ApiPlatformTranslationBundle\ApiPlatformTranslationBundle
  */
 class ApiPlatformTranslationBundleTest extends TestCase

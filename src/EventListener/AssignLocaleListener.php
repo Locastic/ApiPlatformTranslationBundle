@@ -8,14 +8,11 @@ use Doctrine\Common\EventArgs;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
-/**
- * @package Locastic\ApiPlatformTranslationBundle\EventListener
- */
 class AssignLocaleListener
 {
     public function __construct(
         private Translator $translator,
-        private string $defaultLocale = 'en'
+        private string $defaultLocale = 'en',
     ) {
     }
 

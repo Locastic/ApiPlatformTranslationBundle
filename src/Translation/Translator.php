@@ -7,25 +7,19 @@ namespace Locastic\ApiPlatformTranslationBundle\Translation;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-/**
- * @package Locastic\ApiPlatformTranslationBundle\Translation
- */
 class Translator implements TranslatorInterface
 {
     public function __construct(
         private TranslatorInterface $translator,
         private RequestStack $requestStack,
         private string $defaultLocale,
-        private array $enabledLocales = []
+        private array $enabledLocales = [],
     ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function trans($id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
     {
-        if ($locale === null) {
+        if (null === $locale) {
             $locale = $this->loadCurrentLocale();
         }
 
@@ -70,7 +64,6 @@ class Translator implements TranslatorInterface
     }
 
     /**
-     * {@inheritdoc}
      * @codeCoverageIgnore
      */
     public function getLocale(): string

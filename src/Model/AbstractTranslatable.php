@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 /**
- * @package Locastic\ApiPlatformTranslationBundle\Model
  * @template T of TranslationInterface
+ *
  * @implements TranslatableInterface<T>
  */
 abstract class AbstractTranslatable implements TranslatableInterface
