@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Commercial support
+    url: https://locastic.com
+    about: Want help with this bundle or an API Platform/Symfony project? Contact info@locastic.com
