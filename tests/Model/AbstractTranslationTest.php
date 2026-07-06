@@ -65,6 +65,9 @@ class AbstractTranslationTest extends TestCase
         $this->assertSame('english2', $dummyTranslatable->getTranslation('en')->getTranslation());
     }
 
+    /**
+     * @param TranslatableInterface<DummyTranslation> $translatable
+     */
     private function setTranslation(
         string $locale,
         string $translation,

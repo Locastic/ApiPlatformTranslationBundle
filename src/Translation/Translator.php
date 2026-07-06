@@ -5,19 +5,26 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Translation;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\LocaleAwareInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class Translator implements TranslatorInterface
+class Translator implements TranslatorInterface, LocaleAwareInterface
 {
+    /**
+     * @param list<string> $enabledLocales
+     */
     public function __construct(
-        private TranslatorInterface $translator,
+        private TranslatorInterface&LocaleAwareInterface $translator,
         private RequestStack $requestStack,
         private string $defaultLocale,
         private array $enabledLocales = [],
     ) {
     }
 
-    public function trans($id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
+    /**
+     * @param array<string, mixed> $parameters
+     */
+    public function trans(string $id, array $parameters = [], ?string $domain = null, ?string $locale = null): string
     {
         if (null === $locale) {
             $locale = $this->loadCurrentLocale();
@@ -58,7 +65,7 @@ class Translator implements TranslatorInterface
     /**
      * @codeCoverageIgnore
      */
-    public function setLocale($locale = 'en'): void
+    public function setLocale(string $locale = 'en'): void
     {
         $this->translator->setLocale($locale);
     }

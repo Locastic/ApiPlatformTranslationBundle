@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\EventListener;
 
-use Doctrine\Common\EventArgs;
+use Doctrine\Persistence\Event\LifecycleEventArgs;
+use Doctrine\Persistence\ObjectManager;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 
@@ -16,17 +17,26 @@ class AssignLocaleListener
     ) {
     }
 
-    public function postLoad(EventArgs $args): void
+    /**
+     * @param LifecycleEventArgs<ObjectManager> $args
+     */
+    public function postLoad(LifecycleEventArgs $args): void
     {
         $this->assignLocale($args);
     }
 
-    public function prePersist(EventArgs $args): void
+    /**
+     * @param LifecycleEventArgs<ObjectManager> $args
+     */
+    public function prePersist(LifecycleEventArgs $args): void
     {
         $this->assignLocale($args);
     }
 
-    private function assignLocale(EventArgs $args): void
+    /**
+     * @param LifecycleEventArgs<ObjectManager> $args
+     */
+    private function assignLocale(LifecycleEventArgs $args): void
     {
         $object = $args->getObject();
 

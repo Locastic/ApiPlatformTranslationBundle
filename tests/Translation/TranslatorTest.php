@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Translation;
 
+use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\LocaleAwareTranslatorInterface;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Contracts\Translation\LocaleAwareInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -15,16 +17,17 @@ use Symfony\Contracts\Translation\TranslatorInterface;
  */
 class TranslatorTest extends TestCase
 {
-    private TranslatorInterface|\PHPUnit\Framework\MockObject\MockObject $translator;
+    private (TranslatorInterface&LocaleAwareInterface)|\PHPUnit\Framework\MockObject\MockObject $translator;
     private \PHPUnit\Framework\MockObject\MockObject|RequestStack $requestStack;
     private string $defaultLocale;
+    /** @var list<string> */
     private array $enabledLocales;
 
     protected function setUp(): void
     {
         $this->defaultLocale = 'en';
         $this->enabledLocales = ['en', 'hr', 'fr', 'it'];
-        $this->translator = $this->createMock(TranslatorInterface::class);
+        $this->translator = $this->createMock(LocaleAwareTranslatorInterface::class);
         $this->requestStack = $this->createMock(RequestStack::class);
     }
 
@@ -32,13 +35,15 @@ class TranslatorTest extends TestCase
      * @test translate
      *
      * @dataProvider provideTranslations
+     *
+     * @param array<string, mixed> $parameters
      */
     public function testTranslate(
-        $stringToTranslate,
-        $parameters,
-        $domain,
-        $locale,
-        $translation,
+        string $stringToTranslate,
+        array $parameters,
+        string $domain,
+        string $locale,
+        string $translation,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
@@ -56,12 +61,14 @@ class TranslatorTest extends TestCase
      * @test translate
      *
      * @dataProvider provideTranslations
+     *
+     * @param array<string, mixed> $parameters
      */
     public function testTranslateWithNoLocale(
-        $stringToTranslate,
-        $parameters,
-        $domain,
-        $translation,
+        string $stringToTranslate,
+        array $parameters,
+        string $domain,
+        string $translation,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
@@ -81,8 +88,8 @@ class TranslatorTest extends TestCase
      * @dataProvider provideLocales
      */
     public function testLoadCurrentLocale(
-        $requestedLocale,
-        $expectedLocale,
+        ?string $requestedLocale,
+        string $expectedLocale,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
@@ -103,9 +110,9 @@ class TranslatorTest extends TestCase
      * @dataProvider provideLocalesWithAcceptLanguage
      */
     public function testLoadAcceptedLanguagesHeader(
-        $requestedLocale,
-        $acceptedLanguage,
-        $expectedLocale,
+        ?string $requestedLocale,
+        ?string $acceptedLanguage,
+        string $expectedLocale,
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 

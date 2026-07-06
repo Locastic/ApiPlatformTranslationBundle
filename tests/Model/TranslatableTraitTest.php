@@ -89,6 +89,9 @@ class TranslatableTraitTest extends TestCase
         $dummyTranslatable->getTranslation();
     }
 
+    /**
+     * @param TranslatableInterface<DummyTranslation> $translatable
+     */
     private function setTranslation(?string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
     {
         $dummyTranslation = new DummyTranslation();
@@ -99,7 +102,7 @@ class TranslatableTraitTest extends TestCase
         return $dummyTranslation;
     }
 
-    private function setTranslatable($currentLocale, $fallbackLocale): DummyTranslatable
+    private function setTranslatable(?string $currentLocale, ?string $fallbackLocale): DummyTranslatable
     {
         $dummyTranslatable = new DummyTranslatable();
         $dummyTranslatable->setCurrentLocale($currentLocale);
