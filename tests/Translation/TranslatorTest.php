@@ -20,6 +20,7 @@ class TranslatorTest extends TestCase
     private TranslatorInterface|\PHPUnit\Framework\MockObject\MockObject $translator;
     private \PHPUnit\Framework\MockObject\MockObject|RequestStack $requestStack;
     private string $defaultLocale;
+    private array $enabledLocales;
 
     /**
      * {@inheritdoc}
@@ -27,6 +28,7 @@ class TranslatorTest extends TestCase
     protected function setUp(): void
     {
         $this->defaultLocale = 'en';
+        $this->enabledLocales = ['en', 'hr', 'fr', 'it'];
         $this->translator = $this->createMock(TranslatorInterface::class);
         $this->requestStack = $this->createMock(RequestStack::class);
     }
@@ -42,7 +44,7 @@ class TranslatorTest extends TestCase
         $locale,
         $translation
     ): void {
-        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
+        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
         $this->translator
             ->expects($this->once())
@@ -64,7 +66,7 @@ class TranslatorTest extends TestCase
         $domain,
         $translation
     ): void {
-        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
+        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
         $this->translator
             ->expects($this->once())
@@ -84,7 +86,7 @@ class TranslatorTest extends TestCase
         $requestedLocale,
         $expectedLocale
     ): void {
-        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
+        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
         $request = new Request(['locale' => $requestedLocale]);
 
@@ -106,16 +108,9 @@ class TranslatorTest extends TestCase
         $acceptedLanguage,
         $expectedLocale
     ): void {
-        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
+        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
-        $request = $this->getMockBuilder(Request::class)
-            ->setConstructorArgs([
-                    ['locale' => $requestedLocale]
-            ])
-            ->onlyMethods(['getPreferredLanguage'])
-            ->getMock();
-
-        $request->method('getPreferredLanguage')->willReturn($acceptedLanguage);
+        $request = new Request(['locale' => $requestedLocale], [], [], [], [], ['HTTP_ACCEPT_LANGUAGE' => $acceptedLanguage]);
 
         $this->requestStack
             ->expects($this->once())
@@ -129,9 +124,43 @@ class TranslatorTest extends TestCase
     /**
      * @test loadCurrentLocale
      */
+    public function testFallbackIsDefaultLocaleEvenWhenNotFirstEnabledLocale(): void
+    {
+        $translator = new Translator($this->translator, $this->requestStack, 'en', ['hr', 'en', 'fr']);
+
+        $request = new Request([], [], [], [], [], ['HTTP_ACCEPT_LANGUAGE' => 'es']);
+
+        $this->requestStack
+            ->expects($this->once())
+            ->method('getCurrentRequest')
+            ->willReturn($request);
+
+        $this->assertSame('en', $translator->loadCurrentLocale());
+    }
+
+    /**
+     * @test loadCurrentLocale
+     */
+    public function testAnyLocaleAcceptedWhenEnabledLocalesNotConfigured(): void
+    {
+        $translator = new Translator($this->translator, $this->requestStack, 'en');
+
+        $request = new Request(['locale' => 'nl']);
+
+        $this->requestStack
+            ->expects($this->once())
+            ->method('getCurrentRequest')
+            ->willReturn($request);
+
+        $this->assertSame('nl', $translator->loadCurrentLocale());
+    }
+
+    /**
+     * @test loadCurrentLocale
+     */
     public function testLoadCurrentLocaleWithNoRequest(): void
     {
-        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale);
+        $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
         $request = null;
 
@@ -170,6 +199,7 @@ class TranslatorTest extends TestCase
         yield['hr', 'hr'];
         yield['', 'en'];
         yield[null, 'en'];
+        yield['nl', 'en']; // Locale not enabled
     }
 
     public function provideLocalesWithAcceptLanguage(): \Generator
@@ -177,10 +207,12 @@ class TranslatorTest extends TestCase
         yield['en', 'fr', 'en'];
         yield['hr', 'de', 'hr'];
         yield['', 'fr', 'fr'];
-        yield['de', '', 'de'];
+        yield['de', '', 'en']; // Query param locale not enabled
         yield[null, 'it', 'it'];
-        yield['nl', null, 'nl'];
+        yield['nl', null, 'en']; // Query param locale not enabled
         yield['', '', 'en'];
         yield[null, null, 'en'];
+        yield[null, 'fr_FR', 'fr'];
+        yield[null, 'es', 'en']; // Accept-Language locale not enabled
     }
 }
