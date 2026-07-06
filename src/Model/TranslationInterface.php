@@ -9,9 +9,17 @@ namespace Locastic\ApiPlatformTranslationBundle\Model;
  */
 interface TranslationInterface
 {
+    /**
+     * @return TranslatableInterface<TranslationInterface>|null
+     */
     public function getTranslatable(): ?TranslatableInterface;
+
+    /**
+     * @param TranslatableInterface<TranslationInterface>|null $translatable
+     */
     public function setTranslatable(?TranslatableInterface $translatable): void;
 
     public function getLocale(): ?string;
+
     public function setLocale(?string $locale): void;
 }

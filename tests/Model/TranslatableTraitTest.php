@@ -10,8 +10,7 @@ use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyTranslation;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Class TranslatableTraitTest
- * @package Tests\IntegrationTests\TranslationBundle\Model
+ * Class TranslatableTraitTest.
  */
 class TranslatableTraitTest extends TestCase
 {
@@ -90,6 +89,9 @@ class TranslatableTraitTest extends TestCase
         $dummyTranslatable->getTranslation();
     }
 
+    /**
+     * @param TranslatableInterface<DummyTranslation> $translatable
+     */
     private function setTranslation(?string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
     {
         $dummyTranslation = new DummyTranslation();
@@ -100,12 +102,7 @@ class TranslatableTraitTest extends TestCase
         return $dummyTranslation;
     }
 
-    /**
-     * @param $currentLocale
-     * @param $fallbackLocale
-     * @return DummyTranslatable
-     */
-    private function setTranslatable($currentLocale, $fallbackLocale): DummyTranslatable
+    private function setTranslatable(?string $currentLocale, ?string $fallbackLocale): DummyTranslatable
     {
         $dummyTranslatable = new DummyTranslatable();
         $dummyTranslatable->setCurrentLocale($currentLocale);

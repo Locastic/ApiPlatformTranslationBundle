@@ -5,22 +5,29 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Model;
 
 /**
- * Class AbstractTranslation
- *
- * @package Locastic\ApiPlatformTranslationBundle\Model
+ * Class AbstractTranslation.
  */
 abstract class AbstractTranslation implements TranslationInterface
 {
+    /**
+     * @var TranslatableInterface<TranslationInterface>|null
+     */
     protected ?TranslatableInterface $translatable = null;
     protected ?string $locale = null;
+
     /**
      * @codeCoverageIgnore
+     *
+     * @return TranslatableInterface<TranslationInterface>|null
      */
     public function getTranslatable(): ?TranslatableInterface
     {
         return $this->translatable;
     }
 
+    /**
+     * @param TranslatableInterface<TranslationInterface>|null $translatable
+     */
     public function setTranslatable(?TranslatableInterface $translatable): void
     {
         if ($translatable === $this->translatable) {

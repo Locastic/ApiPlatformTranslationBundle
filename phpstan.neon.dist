@@ -1,0 +1,17 @@
+parameters:
+    level: 6
+    paths:
+        - src
+        - tests
+    ignoreErrors:
+        # The translatable <-> translation relation is generic in both directions;
+        # test fixtures specialize T, which generics invariance rejects at these
+        # two setTranslatable() call sites. Revisit with the Model generics redesign.
+        -
+            identifier: argument.type
+            path: tests/Model/AbstractTranslationTest.php
+            count: 1
+        -
+            identifier: argument.type
+            path: tests/Model/TranslatableTraitTest.php
+            count: 1

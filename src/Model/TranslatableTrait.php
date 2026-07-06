@@ -14,19 +14,23 @@ use Doctrine\Persistence\Proxy;
  * @see TranslatableInterface
  *
  * @author Gonzalo Vilaseca <gvilaseca@reiss.co.uk>
+ *
  * @template T of TranslationInterface
  */
 trait TranslatableTrait
 {
     /**
-     * Protected to allow access in classes using this Trait or extending provided AbstractTranslatable
+     * Protected to allow access in classes using this Trait or extending provided AbstractTranslatable.
+     *
      * @var Collection<string, TranslationInterface>
+     *
      * @psalm-var Collection<string, T>
      */
     protected Collection $translations;
 
     /**
      * @var array|TranslationInterface[]
+     *
      * @psalm-var array<string, T>
      */
     protected array $translationsCache = [];
@@ -42,9 +46,6 @@ trait TranslatableTrait
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @return TranslationInterface
      * @psalm-return T
      *
      * @throws \RuntimeException
@@ -83,8 +84,6 @@ trait TranslatableTrait
     }
 
     /**
-     * @param string $locale
-     * @return TranslationInterface|null
      * @psalm-return T|null
      */
     private function matchTranslation(string $locale): ?TranslationInterface
@@ -119,9 +118,6 @@ trait TranslatableTrait
         return $locales;
     }
 
-    /**
-     * @param string $locale
-     */
     public function removeTranslationWithLocale(string $locale): void
     {
         $translations = $this->getTranslations();
@@ -135,6 +131,7 @@ trait TranslatableTrait
 
     /**
      * @return Collection<string, TranslationInterface>
+     *
      * @psalm-return Collection<string, T>
      */
     public function getTranslations(): Collection
@@ -143,9 +140,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param TranslationInterface $translation
      * @psalm-param T $translation
-     * @return bool
      */
     public function hasTranslation(TranslationInterface $translation): bool
     {
@@ -157,9 +152,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param TranslationInterface $translation
      * @psalm-param T $translation
-     * @return void
      */
     public function addTranslation(TranslationInterface $translation): void
     {
@@ -172,9 +165,7 @@ trait TranslatableTrait
     }
 
     /**
-     * @param TranslationInterface $translation
      * @psalm-param T $translation
-     * @return void
      */
     public function removeTranslation(TranslationInterface $translation): void
     {
@@ -199,6 +190,7 @@ trait TranslatableTrait
      * Create resource translation model.
      *
      * @return TranslationInterface $translation
+     *
      * @psalm-return T $translation
      */
     abstract protected function createTranslation(): TranslationInterface;

@@ -2,3 +2,5 @@
 /.phpunit.result.cache
 /composer.lock
 /bin
+/.php-cs-fixer.cache
+/phpstan.neon

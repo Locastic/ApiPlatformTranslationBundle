@@ -18,7 +18,12 @@
     "symfony/dependency-injection": "^6.4 || ^7.0 || ^8.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^10.5"
+    "phpunit/phpunit": "^10.5",
+    "phpstan/phpstan": "^2.2",
+    "phpstan/extension-installer": "^1.4",
+    "phpstan/phpstan-symfony": "^2.0",
+    "phpstan/phpstan-doctrine": "^2.0",
+    "friendsofphp/php-cs-fixer": "^3.95"
   },
   "prefer-stable": true,
   "autoload": {
@@ -37,6 +42,9 @@
     }
   },
   "config": {
-    "bin-dir": "bin"
+    "bin-dir": "bin",
+    "allow-plugins": {
+      "phpstan/extension-installer": true
+    }
   }
 }
