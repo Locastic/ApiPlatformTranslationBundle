@@ -220,5 +220,7 @@ class TranslatorTest extends TestCase
         yield [null, null, 'en'];
         yield [null, 'fr_FR', 'fr'];
         yield [null, 'es', 'en']; // Accept-Language locale not enabled
+        yield [null, 'it;q=0.4, fr;q=0.9', 'fr']; // Quality values respected
+        yield [null, 'fr;q=0.3, it;q=0.9', 'it'];
     }
 }
