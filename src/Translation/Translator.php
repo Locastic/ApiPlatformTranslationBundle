@@ -16,7 +16,7 @@ class Translator implements TranslatorInterface
         private TranslatorInterface $translator,
         private RequestStack $requestStack,
         private string $defaultLocale,
-        private array $enabledLocales
+        private array $enabledLocales = []
     ) {
     }
 
@@ -43,10 +43,20 @@ class Translator implements TranslatorInterface
         $localeCode = $request->query->get('locale');
 
         if ($localeCode) {
-            return $localeCode;
+            if (!$this->enabledLocales || \in_array($localeCode, $this->enabledLocales, true)) {
+                return $localeCode;
+            }
+
+            return $this->defaultLocale;
         }
 
-        $preferredLanguage = $request->getPreferredLanguage($this->enabledLocales);
+        // getPreferredLanguage() falls back to the first element of the list when
+        // nothing matches, so the default locale is pinned first to keep it the fallback.
+        $preferredLanguage = $request->getPreferredLanguage(
+            $this->enabledLocales
+                ? array_values(array_unique([$this->defaultLocale, ...$this->enabledLocales]))
+                : null
+        );
 
         return empty($preferredLanguage) ? $this->defaultLocale : $preferredLanguage;
     }

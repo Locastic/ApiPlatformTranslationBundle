@@ -177,6 +177,8 @@ Usage:
 
 `Accept-Language: de`
 
+**Restricting locales:** if [`framework.enabled_locales`](https://symfony.com/doc/current/reference/configuration/framework.html#enabled-locales) is configured, only those locales are accepted: a `?locale=` value outside the list and non-matching `Accept-Language` headers fall back to the default locale. When `enabled_locales` is not configured (Symfony's default), any requested locale is accepted, as before.
+
 **Serialization group for displaying all translations:** 
 
 `?groups[]=translations`

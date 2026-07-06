@@ -110,7 +110,7 @@ class TranslatorTest extends TestCase
     ): void {
         $translator = new Translator($this->translator, $this->requestStack, $this->defaultLocale, $this->enabledLocales);
 
-        $request = new Request(['locale' => $requestedLocale], [], [], [], [], ['HTTP_ACCEPT-LANGUAGE' => $acceptedLanguage]);
+        $request = new Request(['locale' => $requestedLocale], [], [], [], [], ['HTTP_ACCEPT_LANGUAGE' => $acceptedLanguage]);
 
         $this->requestStack
             ->expects($this->once())
@@ -119,6 +119,40 @@ class TranslatorTest extends TestCase
 
         $actualLocale = $translator->loadCurrentLocale();
         $this->assertSame($expectedLocale, $actualLocale);
+    }
+
+    /**
+     * @test loadCurrentLocale
+     */
+    public function testFallbackIsDefaultLocaleEvenWhenNotFirstEnabledLocale(): void
+    {
+        $translator = new Translator($this->translator, $this->requestStack, 'en', ['hr', 'en', 'fr']);
+
+        $request = new Request([], [], [], [], [], ['HTTP_ACCEPT_LANGUAGE' => 'es']);
+
+        $this->requestStack
+            ->expects($this->once())
+            ->method('getCurrentRequest')
+            ->willReturn($request);
+
+        $this->assertSame('en', $translator->loadCurrentLocale());
+    }
+
+    /**
+     * @test loadCurrentLocale
+     */
+    public function testAnyLocaleAcceptedWhenEnabledLocalesNotConfigured(): void
+    {
+        $translator = new Translator($this->translator, $this->requestStack, 'en');
+
+        $request = new Request(['locale' => 'nl']);
+
+        $this->requestStack
+            ->expects($this->once())
+            ->method('getCurrentRequest')
+            ->willReturn($request);
+
+        $this->assertSame('nl', $translator->loadCurrentLocale());
     }
 
     /**
@@ -165,6 +199,7 @@ class TranslatorTest extends TestCase
         yield['hr', 'hr'];
         yield['', 'en'];
         yield[null, 'en'];
+        yield['nl', 'en']; // Locale not enabled
     }
 
     public function provideLocalesWithAcceptLanguage(): \Generator
@@ -172,12 +207,12 @@ class TranslatorTest extends TestCase
         yield['en', 'fr', 'en'];
         yield['hr', 'de', 'hr'];
         yield['', 'fr', 'fr'];
-        yield['de', '', 'de'];
+        yield['de', '', 'en']; // Query param locale not enabled
         yield[null, 'it', 'it'];
-        yield['nl', null, 'nl'];
+        yield['nl', null, 'en']; // Query param locale not enabled
         yield['', '', 'en'];
         yield[null, null, 'en'];
         yield[null, 'fr_FR', 'fr'];
-        yield[null, 'es', 'en']; // Local not enabled
+        yield[null, 'es', 'en']; // Accept-Language locale not enabled
     }
 }
