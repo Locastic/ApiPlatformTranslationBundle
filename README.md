@@ -6,18 +6,23 @@ Locastic Api Translation Bundle<br>
     <a href="https://packagist.org/packages/locastic/api-platform-translation-bundle" title="Version" target="_blank">
         <img src="https://img.shields.io/packagist/v/Locastic/api-platform-translation-bundle.svg" />
     </a>
-    <a href="https://travis-ci.org/Locastic/ApiPlatformTranslationBundle" title="Build status" target="_blank">
-        <img src="https://img.shields.io/travis/Locastic/ApiPlatformTranslationBundle/master.svg" />
-    </a>
-    <a href="https://scrutinizer-ci.com/g/Locastic/ApiPlatformTranslationBundle/" title="Scrutinizer" target="_blank">
-        <img src="https://img.shields.io/scrutinizer/g/Locastic/ApiPlatformTranslationBundle.svg" />
+    <a href="https://github.com/Locastic/ApiPlatformTranslationBundle/actions/workflows/phpunit.yml" title="Build status" target="_blank">
+        <img src="https://github.com/Locastic/ApiPlatformTranslationBundle/actions/workflows/phpunit.yml/badge.svg" />
     </a>
     <a href="https://packagist.org/packages/locastic/api-platform-translation-bundle" title="Total Downloads" target="_blank">
         <img src="https://poser.pugx.org/locastic/api-platform-translation-bundle/downloads" />
     </a>
 </h1>
 
-Translation bundle for [ApiPlatform](https://api-platform.com/) based on [Sylius translation](https://docs.sylius.com/en/1.2/book/architecture/translations.html)
+Translation bundle for [API Platform](https://api-platform.com/) based on [Sylius translation](https://docs.sylius.com/en/1.2/book/architecture/translations.html): translations are stored per locale in a dedicated translation entity and exposed through your API as embedded objects, with the active locale resolved from each request.
+
+Supported versions:
+-------------------
+
+| Version              | PHP    | API Platform     | Doctrine ORM |
+|----------------------|--------|------------------|--------------|
+| 2.x (`master`)       | `^8.2` | `^3.4 \|\| ^4.0` | `^3.0`       |
+| 1.4                  | `^8.1` | `^2.1 \|\| ^3.0` | `^3.0`       |
 
 Installation:
 -------------
@@ -29,157 +34,144 @@ Implementation:
 --------------
 **Translatable entity:**
 
-- Extend your model/resource with `Locastic\ApiTranslationBundle\Model\AbstractTranslatable`
-- Add `createTranslation()` method which returns new object of translation Entity. Example:
+- Extend your resource with `Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable`
+- Add a `createTranslation()` method which returns a new object of the translation entity
+- Add a `translations` property: a `OneToMany` to the translation entity, indexed by locale, with the `translations` serialization group
+- Add virtual fields for all translatable fields; their getters and setters delegate to the translation object
+
+Example:
 ``` php
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
 
-class Post extends AbstractTranslatable
+#[ORM\Entity]
+#[ApiResource(
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(normalizationContext: ['groups' => ['translations']]),
+        new Put(normalizationContext: ['groups' => ['translations']]),
+    ],
+    normalizationContext: ['groups' => ['article_read']],
+    denormalizationContext: ['groups' => ['article_write']],
+    filters: ['translation.groups'],
+)]
+class Article extends AbstractTranslatable
 {
-    // ...
-    
-    protected function createTranslation(): TranslationInterface
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\OneToMany(
+        targetEntity: ArticleTranslation::class,
+        mappedBy: 'translatable',
+        fetch: 'EXTRA_LAZY',
+        indexBy: 'locale',
+        cascade: ['persist'],
+        orphanRemoval: true,
+    )]
+    #[Groups(['article_write', 'translations'])]
+    protected Collection $translations;
+
+    public function getId(): ?int
     {
-        return new PostTranslation();
-    }
-}
-```
-
-- Add a `translations`-property. Add the `translations` serializations group and make a connection to the translation entity:
-``` php
-use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
-
-class Post extends AbstractTranslatable
-{
-    // ...
-    
-    /**
-     * @ORM\OneToMany(targetEntity="PostTranslation", mappedBy="translatable", fetch="EXTRA_LAZY", indexBy="locale", cascade={"PERSIST"}, orphanRemoval=true)
-     *
-     * @Groups({"post_write", "translations"})
-     */
-    protected $translations;
-}
-```
-
-- Add virtual fields for all translatable fields, and add read serialization group. 
-Getters and setters must call getters and setters from translation class. Example:
-``` php
-use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
-use Symfony\Component\Serializer\Annotation\Groups;
-
-class Post extends AbstractTranslatable
-{
-    // ...
-    
-    /**
-    * @Groups({"post_read"})
-    */
-    private $title;
-    
-    public function setTitle(string $title)
-    {
-        $this->getTranslation()->setTitle($title);
+        return $this->id;
     }
 
+    #[Groups(['article_read'])]
     public function getTitle(): ?string
     {
         return $this->getTranslation()->getTitle();
     }
-}
-```
-
-
-**Translation entity:**
-- Add entity with all translatable fields. Name needs to be name of translatable entity + Translation
-- Extend `Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation`
-- Add serialization group `translations` to all fields and other read/write groups.
-Example Translation entity:
-``` php
-use Symfony\Component\Serializer\Annotation\Groups;
-use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
-
-class PostTranslation extends AbstractTranslation
-{
-    // ...
-
-    /**
-     * @ORM\ManyToOne(targetEntity="Post", inversedBy="translations")
-     */
-    protected $translatable;
-    
-    /**
-     * @ORM\Column(type="string")
-     * 
-     * @Groups({"post_read", "post_write", "translations"})
-     */
-    private $title;
-    
-    /**
-     * @ORM\Column(type="string")
-     *
-     * @Groups({"post_write", "translations"})
-     */
-    protected $locale;
 
     public function setTitle(string $title): void
     {
-        $this->title = $title;
+        $this->getTranslation()->setTitle($title);
+    }
+
+    protected function createTranslation(): TranslationInterface
+    {
+        return new ArticleTranslation();
+    }
+}
+```
+
+**Translation entity:**
+- Add an entity with all translatable fields. The convention is the name of the translatable entity + `Translation`
+- Extend `Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation`
+- Add the `translations` serialization group to all fields, plus your usual read/write groups
+
+Example:
+``` php
+use Doctrine\ORM\Mapping as ORM;
+use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
+use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
+use Symfony\Component\Serializer\Attribute\Groups;
+
+#[ORM\Entity]
+class ArticleTranslation extends AbstractTranslation
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    #[Groups(['translations'])]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'translations')]
+    protected ?TranslatableInterface $translatable = null;
+
+    #[ORM\Column]
+    #[Groups(['article_read', 'article_write', 'translations'])]
+    private ?string $title = null;
+
+    #[ORM\Column]
+    #[Groups(['article_write', 'translations'])]
+    protected ?string $locale = null;
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getTitle(): ?string
     {
         return $this->title;
     }
+
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
 }
 ```
 
-
-**Api resource**
-- Add `translation.groups` filter if you would like to have option to return all translation objects in response.
-If you don't use `translations` group, response will return only requested locale translation or fallback locale translation.
-- Add translations to normalization_context for PUT and POST methods to make sure 
-they return all translation objects.
-- Example:
-``` yaml
-AppBundle\Entity\Post:
-    itemOperations:
-        get:
-            method: GET
-        put:
-            method: PUT
-            normalization_context:
-                groups: ['translations']
-    collectionOperations:
-        get:
-            method: GET
-        post:
-            method: POST
-            normalization_context:
-                groups: ['translations']
-    attributes:
-        filters: ['translation.groups']
-        normalization_context:
-            groups: ['post_read']
-        denormalization_context:
-            groups: ['post_write']
-```
+**API resource notes:**
+- The `translation.groups` filter (registered by this bundle) lets clients request all translation objects in a response via `?groups[]=translations`. Without the `translations` group, responses contain only the requested (or fallback) locale.
+- Add the `translations` group to the `normalizationContext` of `POST` and `PUT`/`PATCH` operations, as in the example above, so write operations return all translation objects.
 
 Usage:
 ------
 
-**Language param for displaying single translation:** 
+**Language param for displaying a single translation:**
 
 `?locale=de`
 
-**Or use Accept-Language http header**
+**Or use the Accept-Language http header**
 
 `Accept-Language: de`
 
-**Restricting locales:** if [`framework.enabled_locales`](https://symfony.com/doc/current/reference/configuration/framework.html#enabled-locales) is configured, only those locales are accepted: a `?locale=` value outside the list and non-matching `Accept-Language` headers fall back to the default locale. When `enabled_locales` is not configured (Symfony's default), any requested locale is accepted, as before.
+**Restricting locales:** if [`framework.enabled_locales`](https://symfony.com/doc/current/reference/configuration/framework.html#enabled-locales) is configured, only those locales are accepted: a `?locale=` value outside the list and non-matching `Accept-Language` headers fall back to the default locale. When `enabled_locales` is not configured (Symfony's default), any requested locale is accepted.
 
-**Serialization group for displaying all translations:** 
+**Serialization group for displaying all translations:**
 
 `?groups[]=translations`
 
@@ -187,7 +179,7 @@ Usage:
 ``` json
 {
     "datetime":"2017-10-10",
-    "translations": { 
+    "translations": {
         "en":{
             "title":"test",
             "content":"test",
@@ -203,6 +195,8 @@ Usage:
 ```
 
 **EDIT translations example**
+
+Send the `id` of each existing translation so it is updated instead of replaced:
 ``` json
 {
     "datetime": "2017-10-10T00:00:00+02:00",
@@ -225,8 +219,8 @@ Usage:
 
 ## Contribution
 
-If you have idea on how to improve this bundle, feel free to contribute. If you have problems or you found some bugs, please open an issue.
+If you have an idea on how to improve this bundle, feel free to contribute. If you have problems or you found some bugs, please open an issue.
 
 ## Support
 
-Want us to help you with this bundle or any Api Platform/Symfony project? Write us an email on info@locastic.com
+Want us to help you with this bundle or any API Platform/Symfony project? Write us an email on info@locastic.com
