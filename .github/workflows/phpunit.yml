@@ -33,3 +33,18 @@ jobs:
       run: composer validate --strict
     - name: Run tests
       run: bin/phpunit
+
+  quality:
+    runs-on: ubuntu-latest
+    name: PHPStan + code style
+    steps:
+    - uses: actions/checkout@v4
+    - uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+    - name: Install dependencies
+      run: composer update --no-interaction --prefer-dist
+    - name: PHPStan
+      run: bin/phpstan analyse --no-progress
+    - name: Code style
+      run: bin/php-cs-fixer check --diff
