@@ -90,6 +90,81 @@ class TranslatableTraitTest extends TestCase
     }
 
     /**
+     * @test getTranslation
+     */
+    public function testGetTranslationCreatesAndAddsMissingTranslation(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+        $this->assertCount(0, $dummyTranslatable->getTranslations());
+
+        $translation = $dummyTranslatable->getTranslation('fr');
+
+        $this->assertSame('fr', $translation->getLocale());
+        $this->assertSame($dummyTranslatable, $translation->getTranslatable());
+        $this->assertCount(1, $dummyTranslatable->getTranslations());
+    }
+
+    /**
+     * @test hasTranslation
+     */
+    public function testHasTranslation(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+        $english = $this->setTranslation('en', 'english', $dummyTranslatable);
+
+        $notAdded = new DummyTranslation();
+        $notAdded->setLocale('fr');
+
+        $this->assertTrue($dummyTranslatable->hasTranslation($english));
+        $this->assertFalse($dummyTranslatable->hasTranslation($notAdded));
+    }
+
+    /**
+     * @test addTranslation
+     */
+    public function testAddTranslationIgnoresTranslationWithoutLocale(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+
+        $translation = new DummyTranslation();
+        $dummyTranslatable->addTranslation($translation);
+
+        $this->assertCount(0, $dummyTranslatable->getTranslations());
+        $this->assertNull($translation->getTranslatable());
+    }
+
+    /**
+     * @test addTranslation
+     */
+    public function testAddTranslationIgnoresDuplicateLocale(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+        $this->setTranslation('en', 'english', $dummyTranslatable);
+
+        $duplicate = new DummyTranslation();
+        $duplicate->setLocale('en');
+        $duplicate->setTranslation('english again');
+        $dummyTranslatable->addTranslation($duplicate);
+
+        $this->assertCount(1, $dummyTranslatable->getTranslations());
+        $this->assertSame('english', $dummyTranslatable->getTranslation('en')->getTranslation());
+    }
+
+    /**
+     * @test removeTranslationWithLocale
+     */
+    public function testRemoveTranslationWithLocale(): void
+    {
+        $dummyTranslatable = $this->setTranslatable('es', 'en');
+        $this->setTranslation('en', 'english', $dummyTranslatable);
+        $this->setTranslation('es', 'espanol', $dummyTranslatable);
+
+        $dummyTranslatable->removeTranslationWithLocale('en');
+
+        $this->assertSame(['es'], array_values($dummyTranslatable->getTranslationLocales()));
+    }
+
+    /**
      * @param TranslatableInterface<DummyTranslation> $translatable
      */
     private function setTranslation(?string $locale, string $translation, TranslatableInterface $translatable): DummyTranslation
