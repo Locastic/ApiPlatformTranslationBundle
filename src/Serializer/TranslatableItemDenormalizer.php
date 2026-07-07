@@ -14,6 +14,10 @@ use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 /**
  * Denormalizes the locale-keyed `translations` map of a translatable resource.
  *
+ * Applies only to the embedded shape (translation documents keyed by locale, or a list
+ * of documents carrying `locale`); payloads referencing translations by IRI are left to
+ * API Platform's native denormalization (see isEmbeddedTranslationsMap()).
+ *
  * Without this, API Platform denormalizes the map as plain objects with no identity,
  * so it recreates every row (ignoring `id`) and orphan-removes locales absent from the
  * payload. This denormalizer intercepts a translatable, handles the `translations` map
@@ -45,7 +49,8 @@ final class TranslatableItemDenormalizer implements DenormalizerInterface, Denor
             && isset($data['translations'])
             && \is_array($data['translations'])
             && is_a($type, TranslatableInterface::class, true)
-            && empty($context[self::ALREADY_CALLED]);
+            && empty($context[self::ALREADY_CALLED])
+            && $this->isEmbeddedTranslationsMap($data['translations']);
     }
 
     public function getSupportedTypes(?string $format): array
@@ -129,6 +134,27 @@ final class TranslatableItemDenormalizer implements DenormalizerInterface, Denor
         }
 
         return $translatable;
+    }
+
+    /**
+     * Only the embedded shape (every item a document, keyed by locale or carrying one)
+     * is this denormalizer's business. Translations referenced by IRI strings, when the
+     * translation is exposed as its own ApiResource, must go through API Platform's
+     * native denormalization so the IRIs resolve to the existing entities; intercepting
+     * them here would silently drop them (and, on PUT, remove every existing
+     * translation). Mixed shapes are ambiguous and take the native path too.
+     *
+     * @param array<array-key, mixed> $translations
+     */
+    private function isEmbeddedTranslationsMap(array $translations): bool
+    {
+        foreach ($translations as $translation) {
+            if (!\is_array($translation)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

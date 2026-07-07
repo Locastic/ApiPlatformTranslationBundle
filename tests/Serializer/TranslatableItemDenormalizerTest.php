@@ -37,6 +37,24 @@ final class TranslatableItemDenormalizerTest extends TestCase
         ));
     }
 
+    public function testLeavesIriReferencedTranslationsToTheNativeDenormalizer(): void
+    {
+        // Translations referenced by IRI (translation exposed as its own ApiResource)
+        // are not the embedded locale-keyed shape this denormalizer handles. It must
+        // step aside so API Platform resolves the IRIs natively; intercepting would
+        // silently drop them (and, on PUT, remove every existing translation).
+        self::assertFalse($this->denormalizer->supportsDenormalization(
+            ['translations' => ['/api/dummy_translations/1', '/api/dummy_translations/2']],
+            DummyTranslatable::class,
+        ));
+
+        // Mixed shapes are ambiguous: hand the whole payload to the native path too.
+        self::assertFalse($this->denormalizer->supportsDenormalization(
+            ['translations' => ['/api/dummy_translations/1', 'en' => ['translation' => 'EN']]],
+            DummyTranslatable::class,
+        ));
+    }
+
     public function testPatchPopulatesExistingTranslationInPlaceAndKeepsAbsentLocales(): void
     {
         $translatable = $this->translatableWith(['en' => 'EN', 'de' => 'DE']);
