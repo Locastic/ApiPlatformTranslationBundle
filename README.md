@@ -44,6 +44,7 @@ Example:
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use Doctrine\Common\Collections\Collection;
@@ -58,7 +59,13 @@ use Symfony\Component\Serializer\Attribute\Groups;
         new Get(),
         new GetCollection(),
         new Post(normalizationContext: ['groups' => ['translations']]),
-        new Put(normalizationContext: ['groups' => ['translations']]),
+        new Patch(normalizationContext: ['groups' => ['translations']]),
+        // PUT replaces the resource; standard_put must be off so it edits the
+        // managed entity instead of building a new one (see the notes below).
+        new Put(
+            normalizationContext: ['groups' => ['translations']],
+            extraProperties: ['standard_put' => false],
+        ),
     ],
     normalizationContext: ['groups' => ['article_read']],
     denormalizationContext: ['groups' => ['article_write']],
@@ -157,6 +164,22 @@ class ArticleTranslation extends AbstractTranslation
 **API resource notes:**
 - The `translation.groups` filter (registered by this bundle) lets clients request all translation objects in a response via `?groups[]=translations`. Without the `translations` group, responses contain only the requested (or fallback) locale.
 - Add the `translations` group to the `normalizationContext` of `POST` and `PUT`/`PATCH` operations, as in the example above, so write operations return all translation objects.
+
+**Editing translations (`PUT` vs `PATCH`):** the bundle populates the submitted translations onto the managed entity, keeping existing translation rows (and their ids) stable, following the HTTP semantics of each method:
+- `PATCH` (`application/merge-patch+json`) is a partial edit: it updates the submitted locales and leaves the others untouched. This is the recommended way to edit translations and needs no extra configuration.
+- `PUT` is a full replace: locales absent from the payload are removed.
+
+For `PUT` you **must** disable API Platform's `standard_put`, either per operation (`extraProperties: ['standard_put' => false]`, as above) or once for the whole API:
+
+``` yaml
+# config/packages/api_platform.yaml
+api_platform:
+    defaults:
+        extra_properties:
+            standard_put: false
+```
+
+With `standard_put` on, API Platform deserializes into a brand-new object and copies its properties (including the `translations` collection) over the managed entity, so translations cannot be matched to their existing rows. The bundle detects this misconfiguration and fails with an explicit error instead of letting the write die in the persistence layer.
 
 Usage:
 ------

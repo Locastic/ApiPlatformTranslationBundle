@@ -20,3 +20,16 @@
    the list now fall back to the default locale instead of being accepted
    verbatim (both the `?locale=` query parameter and the `Accept-Language`
    header). Without `enabled_locales`, behavior is unchanged.
+
+5. Nested translation writes are now reconciled in place. When a write payload
+   carries the `translations` map, each submitted locale updates its existing
+   translation row (keeping the id) instead of the collection being recreated:
+   `PATCH` leaves locales absent from the payload untouched (partial edit) and
+   `PUT` removes them (full replace). The map key is the authoritative locale; a
+   `locale` in the body no longer relabels the addressed row. Expose `PUT` on
+   translatable resources with `extraProperties: ['standard_put' => false]` (or
+   set `api_platform.defaults.extra_properties.standard_put: false` globally) so
+   API Platform edits the managed entity; with `standard_put` on, its persist
+   processor copies the fresh translations collection over the managed one and
+   the rows cannot be matched, so the bundle rejects such a `PUT` with a
+   `LogicException`. `PATCH` needs no extra configuration.
