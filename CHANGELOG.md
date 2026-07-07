@@ -6,6 +6,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-07-07
+
 See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
 
 ### Changed
@@ -28,9 +30,13 @@ See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
 ### Added
 - In-place, merge-by-locale denormalization of nested translation writes: each
   submitted locale updates its existing translation row (stable id), `PATCH`
-  keeps locales absent from the payload and `PUT` removes them (#81)
+  keeps locales absent from the payload and `PUT` removes them; a `PUT` without
+  `standard_put` disabled is rejected with an actionable exception (#81)
 - PHPStan level 6 and php-cs-fixer, enforced in CI (#78)
 - CI matrix covering PHP 8.2 to 8.5 plus a lowest-dependencies leg (#76)
+- Model edge-case tests and a kernel smoke test booting the bundle with
+  Framework, Doctrine and API Platform (#80)
+- Community files: CONTRIBUTING, SECURITY, issue and PR templates (#79)
 
 ## [1.4.1] - 2025-12-18
 
@@ -46,3 +52,8 @@ See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
 
 Older releases are documented on the
 [releases page](https://github.com/Locastic/ApiPlatformTranslationBundle/releases).
+
+[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.4.1...v2.0.0
+[1.4.1]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.4...v1.4.1
+[1.4]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.3.7...v1.4
