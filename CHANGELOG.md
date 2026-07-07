@@ -6,6 +6,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Translations referenced by IRI (translation exposed as its own `ApiResource`)
+  are again resolved by API Platform's native denormalization; 2.0.0
+  intercepted such payloads and silently dropped the references, removing every
+  existing translation on `PUT`
+
 ## [2.0.0] - 2026-07-07
 
 See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
