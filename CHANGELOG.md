@@ -6,11 +6,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-07-07
+
 ### Fixed
 - Translations referenced by IRI (translation exposed as its own `ApiResource`)
   are again resolved by API Platform's native denormalization; 2.0.0
   intercepted such payloads and silently dropped the references, removing every
-  existing translation on `PUT`
+  existing translation on `PUT` (#83)
 
 ## [2.0.0] - 2026-07-07
 
@@ -59,7 +61,8 @@ See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
 Older releases are documented on the
 [releases page](https://github.com/Locastic/ApiPlatformTranslationBundle/releases).
 
-[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.4.1...v2.0.0
 [1.4.1]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.4...v1.4.1
 [1.4]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.3.7...v1.4
