@@ -45,6 +45,6 @@ jobs:
     - name: Install dependencies
       run: composer update --no-interaction --prefer-dist
     - name: PHPStan
-      run: bin/phpstan analyse --no-progress
+      run: bin/phpstan analyse --no-progress --memory-limit=512M
     - name: Code style
       run: bin/php-cs-fixer check --diff
