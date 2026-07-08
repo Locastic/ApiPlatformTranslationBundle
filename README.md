@@ -71,7 +71,7 @@ Implementation:
 - Add virtual fields for all translatable fields; their getters and setters delegate to the translation object
 
 Example:
-``` php
+```php
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
@@ -149,7 +149,7 @@ class Article extends AbstractTranslatable
 - Add the `translations` serialization group to all fields, plus your usual read/write groups
 
 Example:
-``` php
+```php
 use Doctrine\ORM\Mapping as ORM;
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
@@ -202,7 +202,7 @@ class ArticleTranslation extends AbstractTranslation
 
 For `PUT` you **must** disable API Platform's `standard_put`, either per operation (`extraProperties: ['standard_put' => false]`, as above) or once for the whole API:
 
-``` yaml
+```yaml
 # config/packages/api_platform.yaml
 api_platform:
     defaults:
@@ -215,43 +215,114 @@ With `standard_put` on, API Platform deserializes into a brand-new object and co
 Usage:
 ------
 
-**Language param for displaying a single translation:**
+### Request a single locale
 
-`?locale=de`
+Pass the locale as a query parameter:
 
-**Or use the Accept-Language http header**
+```
+GET /articles/1?locale=de
+```
 
-`Accept-Language: de`
+Or use the `Accept-Language` HTTP header:
+
+```
+GET /articles/1
+Accept-Language: de
+```
+
+Translatable fields are returned in the requested locale; when no translation
+exists for it, the fallback locale is used.
 
 **Restricting locales:** if [`framework.enabled_locales`](https://symfony.com/doc/current/reference/configuration/framework.html#enabled-locales) or the bundle's own `enabled_locales` option (which takes precedence) is configured, only those locales are accepted: a `?locale=` value outside the list and non-matching `Accept-Language` headers fall back to the default locale. When neither is configured (Symfony's default), any requested locale is accepted.
 
-**Serialization group for displaying all translations:**
+### Return all translations in a response
 
-`?groups[]=translations`
+Add the `translations` serialization group through the `translation.groups`
+filter (registered by this bundle, enabled on the resource via
+`filters: ['translation.groups']`):
 
-**POST translations example**
-``` json
+```
+GET /articles/1?groups[]=translations
+```
+
+The group is added on top of the operation's normalization groups, so the
+response contains the single-locale virtual fields plus the full collection:
+
+```json
 {
-    "datetime":"2017-10-10",
+    "@id": "/articles/1",
+    "title": "test",
     "translations": {
-        "en":{
-            "title":"test",
-            "content":"test",
-            "locale":"en"
+        "en": {
+            "id": 2,
+            "title": "test",
+            "content": "test",
+            "locale": "en"
         },
-        "de":{
-            "title":"test de",
-            "content":"test de",
-            "locale":"de"
+        "de": {
+            "id": 3,
+            "title": "test de",
+            "content": "test de",
+            "locale": "de"
         }
     }
 }
 ```
 
-**EDIT translations example**
+### Create a resource with translations (POST)
 
-Send the `id` of each existing translation so it is updated instead of replaced:
-``` json
+Submit `translations` as an object keyed by locale; each entry must repeat its
+`locale` field:
+
+```json
+{
+    "datetime": "2017-10-10",
+    "translations": {
+        "en": {
+            "title": "test",
+            "content": "test",
+            "locale": "en"
+        },
+        "de": {
+            "title": "test de",
+            "content": "test de",
+            "locale": "de"
+        }
+    }
+}
+```
+
+### Update translations (PATCH, recommended)
+
+A merge patch updates only the submitted locales and leaves the others
+untouched; existing translation rows are updated in place, no `id` needed:
+
+```
+PATCH /articles/1
+Content-Type: application/merge-patch+json
+```
+
+```json
+{
+    "translations": {
+        "de": {
+            "title": "test edit de",
+            "locale": "de"
+        }
+    }
+}
+```
+
+Here the `de` title is updated while the `en` translation is left as is.
+
+### Replace all translations (PUT)
+
+`PUT` is a full replace: locales absent from the payload are removed. It
+requires `standard_put` to be disabled (see the editing notes under
+[Implementation](#implementation) above). Send the `id` of each
+existing translation so it is updated instead of replaced:
+
+```json
 {
     "datetime": "2017-10-10T00:00:00+02:00",
     "translations": {
@@ -270,6 +341,19 @@ Send the `id` of each existing translation so it is updated instead of replaced:
     }
 }
 ```
+
+Limitations:
+------------
+
+- **Filtering and ordering by translated fields is not supported.** The
+  translated values live on the translation entity and are exposed through
+  virtual getters, so built-in API Platform filters (`SearchFilter`,
+  `OrderFilter`, ...) cannot target them on the resource. Filtering on
+  translation fields requires a custom filter joining the translation entity.
+- **Collections issue one translation query per item.** The `translations`
+  association is `EXTRA_LAZY` and resolved per entity, so listing N resources
+  triggers N additional queries for their translations; there is no built-in
+  eager loading yet.
 
 ## Contribution
 
