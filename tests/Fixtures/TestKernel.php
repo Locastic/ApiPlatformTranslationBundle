@@ -18,6 +18,19 @@ final class TestKernel extends Kernel
 {
     use MicroKernelTrait;
 
+    /**
+     * @param array<string, mixed> $translationConfig api_platform_translation extension config
+     * @param array<string, mixed> $frameworkConfig   extra framework extension config
+     */
+    public function __construct(
+        string $environment = 'test',
+        bool $debug = true,
+        private readonly array $translationConfig = [],
+        private readonly array $frameworkConfig = [],
+    ) {
+        parent::__construct($environment, $debug);
+    }
+
     public function registerBundles(): iterable
     {
         return [
@@ -28,9 +41,20 @@ final class TestKernel extends Kernel
         ];
     }
 
+    public function getConfigDir(): string
+    {
+        // Keep the app-level config dir out of the repository: the project dir
+        // is the bundle root, and debug kernels dump reference files into it.
+        return $this->getCacheDir().'/config';
+    }
+
     public function getCacheDir(): string
     {
-        return sys_get_temp_dir().'/aptb-tests/cache/'.$this->environment;
+        // The container is cached per directory; configs passed in code are not
+        // tracked as resources, so each config combination gets its own dir.
+        $configHash = hash('xxh128', serialize([$this->translationConfig, $this->frameworkConfig]));
+
+        return sys_get_temp_dir().'/aptb-tests/cache/'.$this->environment.'/'.$configHash;
     }
 
     public function getLogDir(): string
@@ -56,12 +80,16 @@ final class TestKernel extends Kernel
 
     protected function configureContainer(ContainerConfigurator $container): void
     {
-        $container->extension('framework', [
+        $container->extension('framework', array_merge([
             'secret' => 'test',
             'test' => true,
             'http_method_override' => false,
             'validation' => ['enabled' => true],
-        ]);
+        ], $this->frameworkConfig));
+
+        if ($this->translationConfig) {
+            $container->extension('api_platform_translation', $this->translationConfig);
+        }
 
         $container->extension('doctrine', [
             'dbal' => ['url' => 'sqlite:///:memory:'],
