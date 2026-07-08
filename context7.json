@@ -1,0 +1,36 @@
+{
+    "$schema": "https://context7.com/schema/context7.json",
+    "url": "https://context7.com/locastic/apiplatformtranslationbundle",
+    "public_key": "pk_6nLhWveJT5eYd7x7e5w1o",
+    "projectTitle": "Locastic ApiPlatformTranslationBundle",
+    "description": "API-first entity translations for API Platform (Symfony): per-locale translation entities exposed as embedded API objects, with the active locale resolved from each request.",
+    "folders": [],
+    "excludeFolders": [
+        "src",
+        "tests",
+        "config",
+        "bin",
+        "vendor"
+    ],
+    "excludeFiles": [
+        "CONTRIBUTING.md",
+        "SECURITY.md"
+    ],
+    "rules": [
+        "A translatable resource extends AbstractTranslatable, implements createTranslation(), and maps translations as OneToMany with indexBy: 'locale', cascade: ['persist'], orphanRemoval: true.",
+        "The translation entity extends AbstractTranslation and holds all translatable fields plus a writable locale field.",
+        "Virtual getters and setters on the translatable delegate to getTranslation(), which resolves the current locale and falls back to the fallback locale.",
+        "Put the 'translations' serialization group on the translations collection, on every field of the translation entity, and in the normalizationContext of POST, PUT, and PATCH operations so writes return all translation objects.",
+        "In write payloads, translations is an object keyed by locale, and each entry must repeat its 'locale' field: {\"translations\": {\"de\": {\"title\": \"...\", \"locale\": \"de\"}}}.",
+        "Prefer PATCH (application/merge-patch+json) for editing translations: it updates only the submitted locales. PUT is a full replace and removes locales absent from the payload.",
+        "PUT requires API Platform's standard_put to be disabled, either per operation via extraProperties: ['standard_put' => false] or globally under api_platform.defaults.extra_properties.",
+        "When editing via PUT, include each existing translation's 'id' so its row is updated in place instead of replaced.",
+        "Clients select the locale with the ?locale= query parameter or the Accept-Language header, and can request all translations at once with ?groups[]=translations (the bundle's 'translation.groups' filter).",
+        "Restrict accepted locales with framework.enabled_locales or the bundle's api_platform_translation.enabled_locales option (which takes precedence); unlisted locales fall back to the default locale.",
+        "Version 2.x requires PHP >= 8.2, API Platform ^3.4 || ^4.0, and Doctrine ORM ^3.0; use PHP 8 attributes, not Doctrine annotations, in mappings."
+    ],
+    "previousVersions": [
+        "v2.0.1",
+        "v1.4.1"
+    ]
+}
