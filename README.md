@@ -30,6 +30,37 @@ Installation:
 composer require locastic/api-platform-translation-bundle
 ```
 
+Configuration:
+--------------
+The bundle works without any configuration. All options and their defaults:
+
+```yaml
+# config/packages/api_platform_translation.yaml
+api_platform_translation:
+    # Locales accepted from the ?locale= query parameter and Accept-Language
+    # negotiation. Empty (the default) inherits framework.enabled_locales;
+    # when both are empty, any requested locale is accepted.
+    enabled_locales: []
+
+    # Locale used when a translation for the current locale does not exist.
+    # null (the default) inherits framework.default_locale.
+    fallback_locale: null
+
+    # Ordered sources the request locale is resolved from; the first source
+    # producing a locale wins. Remove a source to disable it.
+    locale_resolution:
+        - query_param
+        - accept_language
+```
+
+For example, to resolve the locale from the `Accept-Language` header only and
+ignore the `?locale=` query parameter:
+
+```yaml
+api_platform_translation:
+    locale_resolution: [accept_language]
+```
+
 Implementation:
 --------------
 **Translatable entity:**
@@ -192,7 +223,7 @@ Usage:
 
 `Accept-Language: de`
 
-**Restricting locales:** if [`framework.enabled_locales`](https://symfony.com/doc/current/reference/configuration/framework.html#enabled-locales) is configured, only those locales are accepted: a `?locale=` value outside the list and non-matching `Accept-Language` headers fall back to the default locale. When `enabled_locales` is not configured (Symfony's default), any requested locale is accepted.
+**Restricting locales:** if [`framework.enabled_locales`](https://symfony.com/doc/current/reference/configuration/framework.html#enabled-locales) or the bundle's own `enabled_locales` option (which takes precedence) is configured, only those locales are accepted: a `?locale=` value outside the list and non-matching `Accept-Language` headers fall back to the default locale. When neither is configured (Symfony's default), any requested locale is accepted.
 
 **Serialization group for displaying all translations:**
 

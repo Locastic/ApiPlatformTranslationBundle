@@ -6,6 +6,29 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Bundle configuration tree under the `api_platform_translation` alias:
+  `enabled_locales` (inherits `framework.enabled_locales` when empty),
+  `fallback_locale` (inherits `framework.default_locale` when null) and
+  `locale_resolution` (ordered locale sources, `query_param` and
+  `accept_language`; each can be removed or reordered) (#85)
+- FQCN alias for the `Translator` service, so it can be autowired by type (#85)
+
+### Changed
+- Modern bundle layout: the bundle class extends `AbstractBundle` and services
+  are defined in `config/services.php`; `src/Resources/config/services.yml` is
+  gone (#85)
+- A request without an `Accept-Language` header now falls through to the next
+  configured locale source instead of being resolved by header negotiation;
+  with the default resolution order the observable behavior is unchanged (#85)
+- Dependencies: `symfony/config`, `symfony/http-kernel` and
+  `symfony/deprecation-contracts` are direct requirements now that the bundle
+  uses them directly; `symfony/yaml` is no longer required (#85)
+
+### Deprecated
+- `ApiPlatformTranslationExtension`, to be removed in 3.0; the bundle registers
+  its extension itself through `AbstractBundle` (#85)
+
 ## [2.0.1] - 2026-07-07
 
 ### Fixed

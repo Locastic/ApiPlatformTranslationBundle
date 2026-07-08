@@ -1,6 +1,7 @@
 parameters:
     level: 6
     paths:
+        - config
         - src
         - tests
     ignoreErrors:

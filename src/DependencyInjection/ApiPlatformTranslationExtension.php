@@ -7,22 +7,32 @@ namespace Locastic\ApiPlatformTranslationBundle\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
-use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\DependencyInjection\Loader\PhpFileLoader;
 
 /**
- * This is the class that loads and manages your bundle configuration.
- *
- * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/extension.html}
+ * @deprecated since locastic/api-platform-translation-bundle 2.1, to be removed in 3.0;
+ *             the bundle extends AbstractBundle and registers its extension itself
  */
 class ApiPlatformTranslationExtension extends Extension
 {
+    public function __construct()
+    {
+        trigger_deprecation(
+            'locastic/api-platform-translation-bundle',
+            '2.1',
+            'The "%s" class is deprecated and will be removed in 3.0, the bundle registers its own extension through AbstractBundle.',
+            self::class,
+        );
+    }
+
     public function load(array $configs, ContainerBuilder $container): void
     {
-        $directory =
-            __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'Resources'.DIRECTORY_SEPARATOR.'config';
+        $container->setParameter('locastic_api_platform_translation.enabled_locales', '%kernel.enabled_locales%');
+        $container->setParameter('locastic_api_platform_translation.fallback_locale', '%kernel.default_locale%');
+        $container->setParameter('locastic_api_platform_translation.locale_resolution', ['query_param', 'accept_language']);
 
-        $loader = new Loader\YamlFileLoader($container, new FileLocator($directory));
-        $loader->load('services.yml');
+        $loader = new PhpFileLoader($container, new FileLocator(\dirname(__DIR__, 2).DIRECTORY_SEPARATOR.'config'));
+        $loader->load('services.php');
     }
 
     public function getAlias(): string

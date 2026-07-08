@@ -163,6 +163,62 @@ class TranslatorTest extends TestCase
 
     /**
      * @test loadCurrentLocale
+     *
+     * @dataProvider provideResolutionOrders
+     *
+     * @param list<string> $localeResolution
+     */
+    public function testConfigurableResolutionOrder(
+        array $localeResolution,
+        ?string $requestedLocale,
+        ?string $acceptedLanguage,
+        string $expectedLocale,
+    ): void {
+        $translator = new Translator(
+            $this->translator,
+            $this->requestStack,
+            $this->defaultLocale,
+            $this->enabledLocales,
+            $localeResolution,
+        );
+
+        $server = null === $acceptedLanguage ? [] : ['HTTP_ACCEPT_LANGUAGE' => $acceptedLanguage];
+        $request = new Request(['locale' => $requestedLocale], [], [], [], [], $server);
+
+        $this->requestStack
+            ->expects($this->once())
+            ->method('getCurrentRequest')
+            ->willReturn($request);
+
+        $this->assertSame($expectedLocale, $translator->loadCurrentLocale());
+    }
+
+    /**
+     * @test loadCurrentLocale
+     */
+    public function testUnknownResolutionSourceThrows(): void
+    {
+        $translator = new Translator(
+            $this->translator,
+            $this->requestStack,
+            $this->defaultLocale,
+            $this->enabledLocales,
+            ['cookie'],
+        );
+
+        $this->requestStack
+            ->expects($this->once())
+            ->method('getCurrentRequest')
+            ->willReturn(new Request());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unknown locale resolution source "cookie".');
+
+        $translator->loadCurrentLocale();
+    }
+
+    /**
+     * @test loadCurrentLocale
      */
     public function testLoadCurrentLocaleWithNoRequest(): void
     {
@@ -206,6 +262,20 @@ class TranslatorTest extends TestCase
         yield ['', 'en'];
         yield [null, 'en'];
         yield ['nl', 'en']; // Locale not enabled
+    }
+
+    public static function provideResolutionOrders(): \Generator
+    {
+        $header = Translator::RESOLUTION_ACCEPT_LANGUAGE;
+        $query = Translator::RESOLUTION_QUERY_PARAM;
+
+        yield 'header-first order prefers the header' => [[$header, $query], 'hr', 'fr', 'fr'];
+        yield 'header-first order falls through to the query param without a header' => [[$header, $query], 'hr', null, 'hr'];
+        yield 'header-first order pins the default on a non-enabled header locale' => [[$header, $query], 'hr', 'es', 'en'];
+        yield 'query-param-only ignores the header' => [[$query], null, 'fr', 'en'];
+        yield 'query-param-only still resolves the query param' => [[$query], 'hr', 'fr', 'hr'];
+        yield 'header-only ignores the query param' => [[$header], 'hr', 'fr', 'fr'];
+        yield 'empty resolution always yields the default locale' => [[], 'hr', 'fr', 'en'];
     }
 
     public function provideLocalesWithAcceptLanguage(): \Generator

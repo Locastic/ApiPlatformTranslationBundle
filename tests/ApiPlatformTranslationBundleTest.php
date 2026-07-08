@@ -22,4 +22,10 @@ class ApiPlatformTranslationBundleTest extends TestCase
         $bundle = new ApiPlatformTranslationBundle();
         $this->assertNotNull($bundle->getContainerExtension());
     }
+
+    public function testExtensionAliasIsStable(): void
+    {
+        $bundle = new ApiPlatformTranslationBundle();
+        $this->assertSame('api_platform_translation', $bundle->getContainerExtension()?->getAlias());
+    }
 }
