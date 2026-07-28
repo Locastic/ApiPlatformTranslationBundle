@@ -356,14 +356,56 @@ existing translation so it is updated instead of replaced:
 }
 ```
 
-Limitations:
-------------
+### Filter and order by translated fields
 
-- **Filtering and ordering by translated fields is not supported.** The
-  translated values live on the translation entity and are exposed through
-  virtual getters, so built-in API Platform filters (`SearchFilter`,
-  `OrderFilter`, ...) cannot target them on the resource. Filtering on
-  translation fields requires a custom filter joining the translation entity.
+Translated values live on the translation entity, so built-in API Platform
+filters cannot target them on the resource (a core `SearchFilter` on
+`translations.title` works, but matches against **every** locale). The bundle
+ships two experimental Doctrine ORM filters that are constrained to the
+locale resolved from the request. Declare the translation entity's fields by
+their bare name (`title`, not `translations.title`):
+
+```php
+use ApiPlatform\Metadata\ApiFilter;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationOrderFilter;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationSearchFilter;
+
+#[ApiResource]
+#[ApiFilter(TranslationSearchFilter::class, properties: ['title' => 'ipartial'])]
+#[ApiFilter(TranslationOrderFilter::class, properties: ['title'])]
+class Article extends AbstractTranslatable
+{
+    // ...
+}
+```
+
+```
+GET /articles?locale=de&title=katze           searches the de title only
+GET /articles?locale=de&order[title]=asc      orders by the de title
+```
+
+- `TranslationSearchFilter` supports the same strategies as the core
+  `SearchFilter`: `exact` (the default), `partial`, `start`, `end` and
+  `word_start`, each optionally prefixed with `i` for case-insensitive
+  matching. Multiple values for an `exact` property
+  (`?title[]=foo&title[]=bar`) become an `IN` clause.
+- `TranslationOrderFilter` accepts `?order[title]=asc|desc`. A direction
+  configured in `properties` (e.g. `['title' => 'DESC']`) is the default
+  applied when the query parameter gives none; the parameter name is
+  customizable with `arguments: ['orderParameterName' => ...]`. Resources
+  without a translation in the current locale stay in the collection, ordered
+  by the database's null ordering.
+- Omitting `properties` enables every field of the translation entity (except
+  its id and `locale`).
+- Both filters match the resolved locale only: fallback-locale values are not
+  considered, so a resource whose `de` translation is missing does not match a
+  `de` search by its fallback value.
+
+For service-based declaration (YAML/XML instead of the attribute), define a
+child service of the abstract parent
+`locastic_api_platform_translation.doctrine.orm.filter.translation_search` or
+`locastic_api_platform_translation.doctrine.orm.filter.translation_order`,
+pass `$properties`, and tag it `api_platform.filter`.
 
 ## Contribution
 
