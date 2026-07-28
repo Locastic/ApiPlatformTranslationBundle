@@ -52,6 +52,7 @@ class ConfigurationTest extends KernelTestCase
         $this->assertSame([], $container->getParameter('locastic_api_platform_translation.enabled_locales'));
         $this->assertSame('en', $container->getParameter('locastic_api_platform_translation.fallback_locale'));
         $this->assertTrue($container->getParameter('locastic_api_platform_translation.auto_create_translations'));
+        $this->assertTrue($container->getParameter('locastic_api_platform_translation.eager_load_translations'));
         $this->assertSame(
             [Translator::RESOLUTION_QUERY_PARAM, Translator::RESOLUTION_ACCEPT_LANGUAGE],
             $container->getParameter('locastic_api_platform_translation.locale_resolution')
@@ -67,6 +68,17 @@ class ConfigurationTest extends KernelTestCase
         $container = static::getContainer();
 
         $this->assertFalse($container->getParameter('locastic_api_platform_translation.auto_create_translations'));
+    }
+
+    public function testEagerLoadTranslationsCanBeDisabled(): void
+    {
+        self::$translationConfig = [
+            'eager_load_translations' => false,
+        ];
+        self::bootKernel();
+        $container = static::getContainer();
+
+        $this->assertFalse($container->getParameter('locastic_api_platform_translation.eager_load_translations'));
     }
 
     public function testDefaultsInheritFrameworkLocales(): void

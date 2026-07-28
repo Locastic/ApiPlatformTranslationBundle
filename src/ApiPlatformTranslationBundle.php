@@ -31,6 +31,10 @@ class ApiPlatformTranslationBundle extends AbstractBundle
                     ->info('Whether reading a translation that does not exist creates an empty one and attaches it to the entity (with cascade persist, a read can then insert empty rows). Set false so reads never write: missing translations just show empty fields. Defaults to true; the default flips to false in 3.0.')
                     ->defaultNull()
                 ->end()
+                ->booleanNode('eager_load_translations')
+                    ->info('Whether queries for translatable resources fetch-join the translations, so a collection issues one query instead of one per entity per locale. Set false to restore lazy loading.')
+                    ->defaultTrue()
+                ->end()
                 ->arrayNode('locale_resolution')
                     ->info('Ordered list of sources the request locale is resolved from; the first source producing a locale wins. Remove a source to disable it.')
                     ->performNoDeepMerging()
@@ -47,7 +51,7 @@ class ApiPlatformTranslationBundle extends AbstractBundle
     }
 
     /**
-     * @param array{enabled_locales: list<string>, fallback_locale: ?string, auto_create_translations: ?bool, locale_resolution: list<string>} $config
+     * @param array{enabled_locales: list<string>, fallback_locale: ?string, auto_create_translations: ?bool, eager_load_translations: bool, locale_resolution: list<string>} $config
      */
     public function loadExtension(array $config, ContainerConfigurator $container, ContainerBuilder $builder): void
     {
@@ -63,6 +67,7 @@ class ApiPlatformTranslationBundle extends AbstractBundle
             ->set('locastic_api_platform_translation.enabled_locales', $config['enabled_locales'] ?: '%kernel.enabled_locales%')
             ->set('locastic_api_platform_translation.fallback_locale', $config['fallback_locale'] ?? '%kernel.default_locale%')
             ->set('locastic_api_platform_translation.auto_create_translations', $config['auto_create_translations'] ?? true)
+            ->set('locastic_api_platform_translation.eager_load_translations', $config['eager_load_translations'])
             ->set('locastic_api_platform_translation.locale_resolution', $config['locale_resolution']);
 
         $container->import('../config/services.php');

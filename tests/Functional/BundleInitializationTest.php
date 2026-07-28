@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Functional;
 
 use ApiPlatform\Serializer\Filter\GroupFilter;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Extension\TranslationsEagerLoadingExtension;
 use Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleListener;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\TestKernel;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
@@ -39,6 +40,10 @@ class BundleInitializationTest extends KernelTestCase
         $this->assertInstanceOf(
             GroupFilter::class,
             $container->get('locastic_api_platform_translation.filter.translation_groups')
+        );
+        $this->assertInstanceOf(
+            TranslationsEagerLoadingExtension::class,
+            $container->get('locastic_api_platform_translation.doctrine.orm.query_extension.translations_eager_loading')
         );
     }
 }

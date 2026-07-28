@@ -48,5 +48,14 @@ These only affect you if you referenced bundle files by path:
 
 The bundle now has a configuration tree under `api_platform_translation`
 (`enabled_locales`, `fallback_locale`, `auto_create_translations`,
-`locale_resolution`). All defaults preserve 2.0 behavior; see the README
+`eager_load_translations`, `locale_resolution`). All defaults except
+`eager_load_translations` preserve 2.0 behavior; see the README
 "Configuration" section.
+
+## Eager loading of translations
+
+Queries for translatable resources now fetch-join the translations
+(experimental), so listing N resources issues one query instead of one
+translation query per entity per locale. Responses are unchanged; only the
+generated SQL differs. Set `eager_load_translations: false` to restore the
+2.0 lazy behavior.

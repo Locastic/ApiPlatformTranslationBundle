@@ -21,6 +21,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   for virtual setters; creates and attaches the missing translation for the
   exact locale, without locale fallback, regardless of
   `auto_create_translations`
+- Translations of translatable resources are now fetch-joined (experimental
+  `TranslationsEagerLoadingExtension`), so listing N resources issues one query
+  instead of one translation query per entity per locale; disable with the
+  `eager_load_translations` option (#10)
 
 ### Changed
 - Modern bundle layout: the bundle class extends `AbstractBundle` and services

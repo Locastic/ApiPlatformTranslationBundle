@@ -28,6 +28,7 @@ class ApiPlatformTranslationExtensionTest extends TestCase
         $this->assertTrue($container->hasDefinition('locastic_api_platform_translation.filter.translation_groups'));
         $this->assertSame('%kernel.enabled_locales%', $container->getParameter('locastic_api_platform_translation.enabled_locales'));
         $this->assertTrue($container->getParameter('locastic_api_platform_translation.auto_create_translations'));
+        $this->assertTrue($container->getParameter('locastic_api_platform_translation.eager_load_translations'));
         $this->assertSame('api_platform_translation', $extension->getAlias());
     }
 }

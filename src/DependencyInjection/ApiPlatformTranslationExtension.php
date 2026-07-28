@@ -30,6 +30,7 @@ class ApiPlatformTranslationExtension extends Extension
         $container->setParameter('locastic_api_platform_translation.enabled_locales', '%kernel.enabled_locales%');
         $container->setParameter('locastic_api_platform_translation.fallback_locale', '%kernel.default_locale%');
         $container->setParameter('locastic_api_platform_translation.auto_create_translations', true);
+        $container->setParameter('locastic_api_platform_translation.eager_load_translations', true);
         $container->setParameter('locastic_api_platform_translation.locale_resolution', ['query_param', 'accept_language']);
 
         $loader = new PhpFileLoader($container, new FileLocator(\dirname(__DIR__, 2).DIRECTORY_SEPARATOR.'config'));

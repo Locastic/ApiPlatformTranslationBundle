@@ -55,6 +55,11 @@ api_platform_translation:
     # 3.0; leaving the option unset is deprecated since 2.1.
     auto_create_translations: true
 
+    # Whether queries for translatable resources fetch-join the translations,
+    # so listing N resources issues one query instead of one per entity per
+    # locale. Set false to restore lazy loading.
+    eager_load_translations: true
+
     # Ordered sources the request locale is resolved from; the first source
     # producing a locale wins. Remove a source to disable it.
     locale_resolution:
@@ -359,10 +364,6 @@ Limitations:
   virtual getters, so built-in API Platform filters (`SearchFilter`,
   `OrderFilter`, ...) cannot target them on the resource. Filtering on
   translation fields requires a custom filter joining the translation entity.
-- **Collections issue one translation query per item.** The `translations`
-  association is `EXTRA_LAZY` and resolved per entity, so listing N resources
-  triggers N additional queries for their translations; there is no built-in
-  eager loading yet.
 
 ## Contribution
 
