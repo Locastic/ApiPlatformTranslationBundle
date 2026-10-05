@@ -19,10 +19,10 @@ Translation bundle for [API Platform](https://api-platform.com/) based on [Syliu
 Supported versions:
 -------------------
 
-| Version              | PHP    | API Platform     | Doctrine ORM |
-|----------------------|--------|------------------|--------------|
-| 2.x (`master`)       | `^8.2` | `^3.4 \|\| ^4.0` | `^3.0`       |
-| 1.4                  | `^8.1` | `^2.1 \|\| ^3.0` | `^3.0`       |
+| Version              | PHP    | API Platform               | Doctrine ORM |
+|----------------------|--------|----------------------------|--------------|
+| 2.x (`master`)       | `^8.2` | `^3.4 \|\| ^4.0 \|\| ^5.0` | `^3.0`       |
+| 1.4                  | `^8.1` | `^2.1 \|\| ^3.0`           | `^3.0`       |
 
 Installation:
 -------------
