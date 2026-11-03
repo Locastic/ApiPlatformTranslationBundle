@@ -25,6 +25,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `TranslationsEagerLoadingExtension`), so listing N resources issues one query
   instead of one translation query per entity per locale; disable with the
   `eager_load_translations` option (#10)
+- Support for API Platform 5: `api-platform/symfony` now also allows `^5.0`
 
 ### Changed
 - Modern bundle layout: the bundle class extends `AbstractBundle` and services

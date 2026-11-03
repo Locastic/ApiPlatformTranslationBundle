@@ -9,20 +9,29 @@ on:
 jobs:
   tests:
     runs-on: ubuntu-latest
-    name: PHP ${{ matrix.php-versions }} ${{ matrix.dependencies }}
+    name: PHP ${{ matrix.php-versions }} ${{ matrix.dependencies }}${{ matrix.api-platform && format(' (API Platform {0})', matrix.api-platform) || '' }}
     strategy:
       fail-fast: false
       matrix:
         php-versions: ['8.2', '8.3', '8.4', '8.5']
         dependencies: ['highest']
+        # Listed here so the pinned include below becomes its own job instead
+        # of being merged into the existing PHP 8.5 highest job.
+        api-platform: ['']
         include:
           - php-versions: '8.2'
             dependencies: 'lowest'
+          - php-versions: '8.5'
+            dependencies: 'highest'
+            api-platform: '^4.4'
     steps:
     - uses: actions/checkout@v4
     - uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php-versions }}
+    - name: Pin API Platform ${{ matrix.api-platform }}
+      if: matrix.api-platform
+      run: composer require --dev --no-update --no-interaction "api-platform/core:${{ matrix.api-platform }}"
     - name: Install dependencies (highest)
       if: matrix.dependencies == 'highest'
       run: composer update --no-interaction --prefer-dist
