@@ -6,6 +6,10 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-11-03
+
+See [UPGRADE-2.1.md](UPGRADE-2.1.md) for upgrade instructions.
+
 ### Added
 - Bundle configuration tree under the `api_platform_translation` alias:
   `enabled_locales` (inherits `framework.enabled_locales` when empty),
@@ -20,12 +24,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `getOrCreateTranslation()` on `TranslatableTrait`: the explicit write target
   for virtual setters; creates and attaches the missing translation for the
   exact locale, without locale fallback, regardless of
-  `auto_create_translations`
+  `auto_create_translations` (#87)
 - Translations of translatable resources are now fetch-joined (experimental
   `TranslationsEagerLoadingExtension`), so listing N resources issues one query
   instead of one translation query per entity per locale; disable with the
   `eager_load_translations` option (#10)
-- Support for API Platform 5: `api-platform/symfony` now also allows `^5.0`
+- Support for API Platform 5: `api-platform/symfony` now also allows `^5.0` (#89)
 
 ### Changed
 - Modern bundle layout: the bundle class extends `AbstractBundle` and services
@@ -42,7 +46,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - `ApiPlatformTranslationExtension`, to be removed in 3.0; the bundle registers
   its extension itself through `AbstractBundle` (#85)
 - Not setting `auto_create_translations` explicitly; its default (`true`)
-  flips to `false` in 3.0 (see UPGRADE-2.1.md)
+  flips to `false` in 3.0 (see UPGRADE-2.1.md) (#87)
 
 ## [2.0.1] - 2026-07-07
 
@@ -99,7 +103,8 @@ See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
 Older releases are documented on the
 [releases page](https://github.com/Locastic/ApiPlatformTranslationBundle/releases).
 
-[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.1...HEAD
+[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.4.1...v2.0.0
 [1.4.1]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.4...v1.4.1
