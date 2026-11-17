@@ -27,6 +27,7 @@
         "PUT requires API Platform's standard_put to be disabled, either per operation via extraProperties: ['standard_put' => false] or globally under api_platform.defaults.extra_properties.",
         "When editing via PUT, include each existing translation's 'id' so its row is updated in place instead of replaced.",
         "Clients select the locale with the ?locale= query parameter or the Accept-Language header, and can request all translations at once with ?groups[]=translations (the bundle's 'translation.groups' filter).",
+        "Filter and order collections by translated fields with the bundle's TranslationSearchFilter and TranslationOrderFilter (e.g. #[ApiFilter(TranslationSearchFilter::class, properties: ['title' => 'ipartial'])]); declare the translation entity's fields by their bare name ('title', not 'translations.title'). They match only the locale resolved from the request, unlike a core SearchFilter on 'translations.title', which matches every locale.",
         "Restrict accepted locales with framework.enabled_locales or the bundle's api_platform_translation.enabled_locales option (which takes precedence); unlisted locales fall back to the default locale.",
         "Version 2.x requires PHP >= 8.2, API Platform ^3.4 || ^4.0, and Doctrine ORM ^3.0; use PHP 8 attributes, not Doctrine annotations, in mappings."
     ],

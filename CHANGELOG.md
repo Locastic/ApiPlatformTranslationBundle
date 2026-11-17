@@ -6,6 +6,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Locale-constrained Doctrine ORM filters (experimental):
+  `TranslationSearchFilter` and `TranslationOrderFilter` search and order
+  collections by translated fields in the locale resolved from the request,
+  e.g. `?locale=de&title=foo&order[title]=asc` (#24, #47, #57)
+
 ## [2.1.0] - 2026-11-03
 
 See [UPGRADE-2.1.md](UPGRADE-2.1.md) for upgrade instructions.
