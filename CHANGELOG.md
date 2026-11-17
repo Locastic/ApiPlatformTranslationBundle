@@ -6,11 +6,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-11-17
+
 ### Added
 - Locale-constrained Doctrine ORM filters (experimental):
   `TranslationSearchFilter` and `TranslationOrderFilter` search and order
   collections by translated fields in the locale resolved from the request,
-  e.g. `?locale=de&title=foo&order[title]=asc` (#24, #47, #57)
+  e.g. `?locale=de&title=foo&order[title]=asc` (#24, #47, #57, #91)
 
 ## [2.1.0] - 2026-11-03
 
@@ -109,7 +111,8 @@ See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
 Older releases are documented on the
 [releases page](https://github.com/Locastic/ApiPlatformTranslationBundle/releases).
 
-[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v1.4.1...v2.0.0
