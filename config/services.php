@@ -8,9 +8,13 @@ use ApiPlatform\Doctrine\Orm\Extension\QueryCollectionExtensionInterface;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Extension\TranslationsEagerLoadingExtension;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationOrderFilter;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationSearchFilter;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Loader\TranslationsLoader;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Loader\TranslationsLoaderInterface;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\State\TranslationsCollectionProvider;
 use Locastic\ApiPlatformTranslationBundle\EventListener\AssignLocaleListener;
 use Locastic\ApiPlatformTranslationBundle\Serializer\TranslatableItemDenormalizer;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 return static function (ContainerConfigurator $container): void {
     $services = $container->services();
@@ -53,6 +57,25 @@ return static function (ContainerConfigurator $container): void {
             ->tag('api_platform.doctrine.orm.query_extension.item', ['priority' => -8]);
 
         $services->alias(TranslationsEagerLoadingExtension::class, 'locastic_api_platform_translation.doctrine.orm.query_extension.translations_eager_loading');
+
+        $services->set('locastic_api_platform_translation.doctrine.orm.translations_loader', TranslationsLoader::class)
+            ->args([
+                service('doctrine'),
+            ]);
+
+        $services->alias(TranslationsLoaderInterface::class, 'locastic_api_platform_translation.doctrine.orm.translations_loader');
+
+        // Collections load the translations of the provided page in a second
+        // step; the extension above then leaves the collection query alone
+        $services->set('locastic_api_platform_translation.doctrine.orm.state.translations_collection_provider', TranslationsCollectionProvider::class)
+            ->decorate('api_platform.doctrine.orm.state.collection_provider', null, 0, ContainerInterface::IGNORE_ON_INVALID_REFERENCE)
+            ->args([
+                service('.inner'),
+                service('locastic_api_platform_translation.doctrine.orm.translations_loader'),
+                param('locastic_api_platform_translation.eager_load_translations'),
+            ]);
+
+        $services->alias(TranslationsCollectionProvider::class, 'locastic_api_platform_translation.doctrine.orm.state.translations_collection_provider');
 
         // Abstract parents the #[ApiFilter] attribute and user-defined filter
         // services build upon; children carry the api_platform.filter tag.

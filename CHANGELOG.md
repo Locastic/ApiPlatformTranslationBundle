@@ -6,6 +6,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- `TranslationsLoaderInterface` service (experimental): loads the translations
+  of a set of already loaded translatable entities with one query, for custom
+  state providers
+
+### Changed
+- Collections load the translations of their page with one extra query instead
+  of a fetch join inside the paginated query, and `TranslationOrderFilter` and
+  `TranslationSearchFilter` no longer join the to-many `translations`
+  association. Doctrine's Paginator no longer runs its count and identifier
+  queries over the whole joined result: ordering 200,000 resources by a
+  translated field went from about 3 seconds to about 0.2 seconds on
+  PostgreSQL. Responses and the `eager_load_translations` option are
+  unchanged; item operations keep the fetch join
+
 ## [2.2.0] - 2026-11-17
 
 ### Added

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Doctrine\Orm\Filter;
 
+use ApiPlatform\Doctrine\Orm\Extension\FilterEagerLoadingExtension;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGenerator;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationOrderFilter;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationSearchFilter;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticle;
+use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticleTranslation;
 
 final class TranslationSearchFilterTest extends TranslationFilterTestCase
 {
@@ -21,7 +23,15 @@ final class TranslationSearchFilterTest extends TranslationFilterTestCase
         $this->createFilter(['title' => 'exact'])
             ->apply($queryBuilder, new QueryNameGenerator(), IntegrationArticle::class, null, ['filters' => ['title' => 'A cat DE']]);
 
-        self::assertStringContainsString('LEFT JOIN o.translations translations_a1 WITH translations_a1.locale = :locale_p1', $queryBuilder->getDQL());
+        // a subquery on the current-locale translation, no to-many join
+        self::assertSame(
+            \sprintf(
+                'SELECT o FROM %s o WHERE EXISTS (SELECT translations_a1 FROM %s translations_a1 WHERE IDENTITY(translations_a1.translatable) = o.id AND translations_a1.locale = :locale_p1 AND (translations_a1.title = :title_p2))',
+                IntegrationArticle::class,
+                IntegrationArticleTranslation::class,
+            ),
+            $queryBuilder->getDQL(),
+        );
         self::assertSame(['A cat DE'], $this->titlesIn($queryBuilder->getQuery()->getResult(), 'de'));
     }
 
@@ -162,9 +172,11 @@ final class TranslationSearchFilterTest extends TranslationFilterTestCase
         self::assertSame($dql, $queryBuilder->getDQL());
     }
 
-    public function testSharesTheLocaleJoinWithTheOrderFilter(): void
+    public function testCombinesWithTheOrderFilter(): void
     {
-        $this->seedArticle(['en' => 'A cat EN', 'de' => 'A cat DE']);
+        $this->seedArticle(['en' => 'A cat EN', 'de' => 'Zulu cat DE']);
+        $this->seedArticle(['en' => 'A dog EN', 'de' => 'A dog DE']);
+        $this->seedArticle(['en' => 'catalog EN', 'de' => 'Alpha cat DE']);
 
         $queryBuilder = $this->createQueryBuilder();
         $queryNameGenerator = new QueryNameGenerator();
@@ -175,8 +187,76 @@ final class TranslationSearchFilterTest extends TranslationFilterTestCase
         $orderFilter = new TranslationOrderFilter($this->createTranslator(), $this->createManagerRegistry(), null, ['title' => null]);
         $orderFilter->apply($queryBuilder, $queryNameGenerator, IntegrationArticle::class, null, ['filters' => ['order' => ['title' => 'asc']]]);
 
-        self::assertSame(1, substr_count($queryBuilder->getDQL(), 'JOIN o.translations'));
+        self::assertStringNotContainsString('JOIN o.translations', $queryBuilder->getDQL());
+        self::assertSame(['Alpha cat DE', 'Zulu cat DE'], $this->titlesIn($queryBuilder->getQuery()->getResult(), 'de'));
+    }
+
+    /**
+     * API Platform moves the WHERE clause into an IN subquery with new
+     * aliases as soon as the query has a join (FilterEagerLoadingExtension);
+     * the EXISTS subquery must survive that rewrite.
+     */
+    public function testSurvivesTheWhereRewriteOfApiPlatform(): void
+    {
+        $this->seedArticle(['en' => 'A cat EN', 'de' => 'Zulu cat DE']);
+        $this->seedArticle(['en' => 'cat EN', 'de' => 'A dog DE']);
+        $this->seedArticle(['en' => 'catalog EN', 'de' => 'Alpha cat DE']);
+
+        $queryBuilder = $this->createQueryBuilder();
+        $queryNameGenerator = new QueryNameGenerator();
+
+        $this->createFilter(['title' => 'partial'])
+            ->apply($queryBuilder, $queryNameGenerator, IntegrationArticle::class, null, ['filters' => ['title' => 'cat']]);
+        $orderFilter = new TranslationOrderFilter($this->createTranslator(), $this->createManagerRegistry(), null, ['title' => null]);
+        $orderFilter->apply($queryBuilder, $queryNameGenerator, IntegrationArticle::class, null, ['filters' => ['order' => ['title' => 'desc']]]);
+
+        (new FilterEagerLoadingExtension())->applyToCollection($queryBuilder, $queryNameGenerator, IntegrationArticle::class);
+
+        // the subquery is correlated with the re-aliased root of the IN subquery
+        self::assertStringContainsString('WHERE o IN(SELECT o_a3 FROM', $queryBuilder->getDQL());
+        self::assertStringContainsString('IDENTITY(translations_a1.translatable) = o_a3.id', $queryBuilder->getDQL());
+        self::assertSame(['Zulu cat DE', 'Alpha cat DE'], $this->titlesIn($queryBuilder->getQuery()->getResult(), 'de'));
+    }
+
+    public function testMultiplePropertiesMustAllMatch(): void
+    {
+        $this->seedArticle(['en' => 'A cat EN', 'de' => 'A cat DE']);
+        $this->seedArticle(['en' => 'A cat EN', 'de' => 'A dog DE']);
+
+        $queryBuilder = $this->createQueryBuilder();
+        $queryNameGenerator = new QueryNameGenerator();
+        $this->createFilter(['title' => 'partial'])
+            ->apply($queryBuilder, $queryNameGenerator, IntegrationArticle::class, null, ['filters' => ['title' => 'cat']]);
+        $this->createFilter(['title' => 'end'])
+            ->apply($queryBuilder, $queryNameGenerator, IntegrationArticle::class, null, ['filters' => ['title' => 'DE']]);
+
         self::assertSame(['A cat DE'], $this->titlesIn($queryBuilder->getQuery()->getResult(), 'de'));
+    }
+
+    /**
+     * No join at all: API Platform paginates with a plain LIMIT query and a
+     * plain count, not through the identifier query of the fetch-join
+     * Paginator.
+     */
+    public function testPaginatesWithoutTheFetchJoinPaginator(): void
+    {
+        $this->seedArticle(['en' => 'A cat EN', 'de' => 'A cat DE']);
+        $this->seedArticle(['en' => 'A dog EN', 'de' => 'A dog DE']);
+        $this->seedArticle(['en' => 'catalog EN', 'de' => 'catalog DE']);
+
+        $queryBuilder = $this->createQueryBuilder();
+        $this->createFilter(['title' => 'partial'])
+            ->apply($queryBuilder, new QueryNameGenerator(), IntegrationArticle::class, null, ['filters' => ['title' => 'cat']]);
+
+        $this->queryLogger->reset();
+        $paginator = $this->paginate($queryBuilder);
+
+        $articles = iterator_to_array($paginator, false);
+        self::assertSame(2.0, $paginator->getTotalItems());
+        // one page query and one count query
+        self::assertCount(2, $this->queryLogger->queries);
+        self::assertStringNotContainsString('DISTINCT', implode("\n", $this->queryLogger->queries));
+        self::assertSame(['A cat DE', 'catalog DE'], $this->titlesIn($articles, 'de'));
     }
 
     public function testDescriptionListsConfiguredPropertiesWithTheirStrategy(): void

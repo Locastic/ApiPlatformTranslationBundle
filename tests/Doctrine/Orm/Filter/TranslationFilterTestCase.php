@@ -4,7 +4,13 @@ declare(strict_types=1);
 
 namespace Locastic\ApiPlatformTranslationBundle\Tests\Doctrine\Orm\Filter;
 
+use ApiPlatform\Doctrine\Orm\Extension\PaginationExtension;
+use ApiPlatform\Doctrine\Orm\Paginator;
+use ApiPlatform\Doctrine\Orm\Util\QueryNameGenerator;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\State\Pagination\Pagination;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Logging\Middleware;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMSetup;
@@ -14,6 +20,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\LocaleAwareTranslatorInterface;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticle;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticleTranslation;
+use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\QueryLogger;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,8 +35,12 @@ abstract class TranslationFilterTestCase extends TestCase
 {
     protected EntityManagerInterface $em;
 
+    protected QueryLogger $queryLogger;
+
     protected function setUp(): void
     {
+        $this->queryLogger = new QueryLogger();
+
         // Use the long-standing `...Configuration` name: the shorter `...Config`
         // alias was only added mid-3.x, and the ORM floor (installed on the
         // lowest-dependencies CI leg) does not have it.
@@ -44,6 +55,7 @@ abstract class TranslationFilterTestCase extends TestCase
             $config->setProxyDir(sys_get_temp_dir());
             $config->setProxyNamespace('LocasticApiPlatformTranslationTestProxies');
         }
+        $config->setMiddlewares([new Middleware($this->queryLogger)]);
         $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true], $config);
         $this->em = new EntityManager($connection, $config);
 
@@ -75,6 +87,25 @@ abstract class TranslationFilterTestCase extends TestCase
         $managerRegistry->method('getManagerForClass')->willReturn($this->em);
 
         return $managerRegistry;
+    }
+
+    /**
+     * Paginates the query the way API Platform does for a collection
+     * operation: its PaginationExtension inspects the query and decides
+     * between a plain LIMIT query and Doctrine's fetch-join Paginator.
+     *
+     * @return Paginator<IntegrationArticle>
+     */
+    protected function paginate(QueryBuilder $queryBuilder, int $itemsPerPage = 30): Paginator
+    {
+        $operation = new GetCollection(class: IntegrationArticle::class, paginationItemsPerPage: $itemsPerPage);
+        $extension = new PaginationExtension($this->createManagerRegistry(), new Pagination());
+        $extension->applyToCollection($queryBuilder, new QueryNameGenerator(), IntegrationArticle::class, $operation);
+
+        $paginator = $extension->getResult($queryBuilder, IntegrationArticle::class, $operation);
+        self::assertInstanceOf(Paginator::class, $paginator);
+
+        return $paginator;
     }
 
     /**

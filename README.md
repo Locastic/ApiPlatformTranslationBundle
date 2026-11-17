@@ -55,9 +55,10 @@ api_platform_translation:
     # 3.0; leaving the option unset is deprecated since 2.1.
     auto_create_translations: true
 
-    # Whether queries for translatable resources fetch-join the translations,
-    # so listing N resources issues one query instead of one per entity per
-    # locale. Set false to restore lazy loading.
+    # Whether the translations of translatable resources are loaded up front,
+    # so listing N resources does not issue one query per entity per locale:
+    # an item query fetch-joins them, a collection loads the translations of
+    # its page with one extra query. Set false to restore lazy loading.
     eager_load_translations: true
 
     # Ordered sources the request locale is resolved from; the first source
@@ -402,10 +403,13 @@ GET /articles?locale=de&order[title]=asc      orders by the de title
   considered, so a resource whose `de` translation is missing does not match a
   `de` search by its fallback value.
 
-On large collections, index what you filter by on the translation entity:
+Both filters rely on a resource having one translation per locale, as the
+`indexBy: 'locale'` mapping does. On large collections, declare that as a
+unique constraint and index what you filter by on the translation entity:
 
 ```php
 #[ORM\Entity]
+#[ORM\UniqueConstraint(columns: ['translatable_id', 'locale'])]
 #[ORM\Index(columns: ['locale', 'title'])]
 class ArticleTranslation extends AbstractTranslation
 {
@@ -413,15 +417,36 @@ class ArticleTranslation extends AbstractTranslation
 }
 ```
 
+- The unique constraint on the translatable and `locale` serves the lookup of
+  the current-locale translation, which both filters and the count query of
+  an ordered collection use.
 - An index on `locale` plus the field serves the `exact` and `start`
   strategies.
 - `partial`, `end` and `word_start` start with a wildcard and the `i` variants
   wrap the column in `LOWER()`, so a plain index cannot serve them; use what
   your database offers for text search (on PostgreSQL, a `pg_trgm` index on
   `LOWER(title)`).
-- Ordering by a translated field sorts the whole filtered collection before
-  the page is cut, and no index avoids that. Measure it on realistic data
-  before you expose it on a large, unfiltered collection.
+- Ordering by a translated field joins the current-locale translation of
+  every resource in the filtered collection and sorts by it before the page is
+  cut; the cost grows with the collection, not with the page. Measure it on
+  realistic data before you expose it on a very large, unfiltered collection.
+
+A collection issues the same number of queries whatever the page size: the
+count, the page, and one query for the translations of that page. The bundle
+does this by decorating API Platform's Doctrine ORM collection provider. A
+custom provider that builds its result some other way can load the
+translations of its entities with the same single query:
+
+```php
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Loader\TranslationsLoaderInterface;
+
+public function __construct(private TranslationsLoaderInterface $translationsLoader)
+{
+}
+
+// ...
+$this->translationsLoader->load($articles);
+```
 
 For service-based declaration (YAML/XML instead of the attribute), define a
 child service of the abstract parent

@@ -10,11 +10,18 @@ use ApiPlatform\Doctrine\Orm\Util\QueryNameGeneratorInterface;
 use ApiPlatform\Metadata\Operation;
 use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\State\TranslationsCollectionProvider;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 
 /**
  * Fetch-joins the translations of translatable resources, so reading translated
  * fields issues one query per collection instead of one per entity per locale.
+ *
+ * A collection query is left alone when the provider announces through the
+ * context that it loads the translations after the query, which is what the
+ * bundle's decorator of the Doctrine ORM collection provider does: inside a
+ * paginated query, a to-many fetch join makes the count and identifier queries
+ * go through the whole joined result.
  *
  * All locales are joined, not only the current one: a locale-constrained fetch
  * join would mark the collection initialized with a subset, breaking
@@ -30,6 +37,10 @@ final class TranslationsEagerLoadingExtension implements QueryCollectionExtensio
 
     public function applyToCollection(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $resourceClass, ?Operation $operation = null, array $context = []): void
     {
+        if (true === ($context[TranslationsCollectionProvider::TRANSLATIONS_LOADED_AFTER_QUERY] ?? false)) {
+            return;
+        }
+
         $this->joinTranslations($queryBuilder, $queryNameGenerator, $resourceClass);
     }
 

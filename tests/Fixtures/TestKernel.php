@@ -21,12 +21,14 @@ final class TestKernel extends Kernel
     /**
      * @param array<string, mixed> $translationConfig api_platform_translation extension config
      * @param array<string, mixed> $frameworkConfig   extra framework extension config
+     * @param bool                 $doctrineOrm       whether API Platform's Doctrine ORM integration is enabled
      */
     public function __construct(
         string $environment = 'test',
         bool $debug = true,
         private readonly array $translationConfig = [],
         private readonly array $frameworkConfig = [],
+        private readonly bool $doctrineOrm = false,
     ) {
         parent::__construct($environment, $debug);
     }
@@ -52,7 +54,7 @@ final class TestKernel extends Kernel
     {
         // The container is cached per directory; configs passed in code are not
         // tracked as resources, so each config combination gets its own dir.
-        $configHash = hash('xxh128', serialize([$this->translationConfig, $this->frameworkConfig]));
+        $configHash = hash('xxh128', serialize([$this->translationConfig, $this->frameworkConfig, $this->doctrineOrm]));
 
         return sys_get_temp_dir().'/aptb-tests/cache/'.$this->environment.'/'.$configHash;
     }
@@ -93,12 +95,12 @@ final class TestKernel extends Kernel
 
         $container->extension('doctrine', [
             'dbal' => ['url' => 'sqlite:///:memory:'],
-        ]);
+        ] + ($this->doctrineOrm ? ['orm' => []] : []));
 
         $container->extension('api_platform', [
             'title' => 'Test',
             'mapping' => ['paths' => []],
-            'doctrine' => false,
+            'doctrine' => $this->doctrineOrm,
         ]);
     }
 }
