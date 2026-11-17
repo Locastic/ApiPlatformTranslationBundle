@@ -73,6 +73,41 @@ final class TranslationSearchFilterTest extends TranslationFilterTestCase
         yield 'ipartial' => ['ipartial', 'CAT', ['A cat DE', 'catalog DE']];
     }
 
+    /**
+     * @dataProvider provideWildcardValues
+     *
+     * @param list<string> $expectedTitles
+     */
+    public function testLikeWildcardsInTheValueAreMatchedLiterally(string $strategy, string $value, array $expectedTitles): void
+    {
+        $this->seedArticle(['de' => '50% off']);
+        $this->seedArticle(['de' => '500 offers']);
+        $this->seedArticle(['de' => 'snake_case']);
+        $this->seedArticle(['de' => 'snakeXcase']);
+        $this->seedArticle(['de' => 'wow! really']);
+
+        $queryBuilder = $this->createQueryBuilder();
+        $this->createFilter(['title' => $strategy])
+            ->apply($queryBuilder, new QueryNameGenerator(), IntegrationArticle::class, null, ['filters' => ['title' => $value]]);
+
+        $titles = $this->titlesIn($queryBuilder->getQuery()->getResult(), 'de');
+        sort($titles);
+        self::assertSame($expectedTitles, $titles);
+    }
+
+    /**
+     * @return iterable<string, array{string, string, list<string>}>
+     */
+    public static function provideWildcardValues(): iterable
+    {
+        yield 'percent' => ['partial', '50%', ['50% off']];
+        yield 'percent at start' => ['start', '50% o', ['50% off']];
+        yield 'underscore' => ['ipartial', 'snake_c', ['snake_case']];
+        yield 'underscore at end' => ['end', '_case', ['snake_case']];
+        yield 'escape character' => ['partial', 'wow!', ['wow! really']];
+        yield 'word start' => ['word_start', 'r%', []];
+    }
+
     public function testMultipleExactValuesBecomeAnInClause(): void
     {
         $this->seedArticle(['en' => 'A cat EN', 'de' => 'A cat DE']);

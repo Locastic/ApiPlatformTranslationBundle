@@ -37,6 +37,8 @@ final class TranslationSearchFilter extends AbstractTranslationFilter
     public const STRATEGY_END = 'end';
     public const STRATEGY_WORD_START = 'word_start';
 
+    private const LIKE_ESCAPE_CHAR = '!';
+
     /**
      * @param array<string, string|null>|null $properties translated field name to matching strategy
      */
@@ -134,34 +136,28 @@ final class TranslationSearchFilter extends AbstractTranslationFilter
             return;
         }
 
+        // LIKE wildcards in the searched value are matched literally
+        $like = static fn (string $pattern): string => \sprintf(
+            "%s LIKE %s ESCAPE '%s'",
+            $wrapCase($aliasedField),
+            $wrapCase($pattern),
+            self::LIKE_ESCAPE_CHAR,
+        );
+
         $ors = [];
         $parameters = [];
         foreach ($values as $key => $value) {
             $keyValueParameter = \sprintf('%s_%s', $valueParameter, $key);
+            $value = (string) preg_replace('/[!%_]/', self::LIKE_ESCAPE_CHAR.'$0', $value);
             $parameters[$keyValueParameter] = $caseSensitive ? $value : strtolower($value);
 
             $ors[] = match ($strategy) {
-                self::STRATEGY_PARTIAL => $queryBuilder->expr()->like(
-                    $wrapCase($aliasedField),
-                    $wrapCase((string) $queryBuilder->expr()->concat("'%'", $keyValueParameter, "'%'")),
-                ),
-                self::STRATEGY_START => $queryBuilder->expr()->like(
-                    $wrapCase($aliasedField),
-                    $wrapCase((string) $queryBuilder->expr()->concat($keyValueParameter, "'%'")),
-                ),
-                self::STRATEGY_END => $queryBuilder->expr()->like(
-                    $wrapCase($aliasedField),
-                    $wrapCase((string) $queryBuilder->expr()->concat("'%'", $keyValueParameter)),
-                ),
+                self::STRATEGY_PARTIAL => $like((string) $queryBuilder->expr()->concat("'%'", $keyValueParameter, "'%'")),
+                self::STRATEGY_START => $like((string) $queryBuilder->expr()->concat($keyValueParameter, "'%'")),
+                self::STRATEGY_END => $like((string) $queryBuilder->expr()->concat("'%'", $keyValueParameter)),
                 self::STRATEGY_WORD_START => $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->like(
-                        $wrapCase($aliasedField),
-                        $wrapCase((string) $queryBuilder->expr()->concat($keyValueParameter, "'%'")),
-                    ),
-                    $queryBuilder->expr()->like(
-                        $wrapCase($aliasedField),
-                        $wrapCase((string) $queryBuilder->expr()->concat("'% '", $keyValueParameter, "'%'")),
-                    ),
+                    $like((string) $queryBuilder->expr()->concat($keyValueParameter, "'%'")),
+                    $like((string) $queryBuilder->expr()->concat("'% '", $keyValueParameter, "'%'")),
                 ),
                 default => throw new \InvalidArgumentException(\sprintf('Strategy "%s" does not exist.', $strategy)),
             };
