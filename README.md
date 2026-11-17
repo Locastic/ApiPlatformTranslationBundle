@@ -388,7 +388,8 @@ GET /articles?locale=de&order[title]=asc      orders by the de title
   `SearchFilter`: `exact` (the default), `partial`, `start`, `end` and
   `word_start`, each optionally prefixed with `i` for case-insensitive
   matching. Multiple values for an `exact` property
-  (`?title[]=foo&title[]=bar`) become an `IN` clause.
+  (`?title[]=foo&title[]=bar`) become an `IN` clause. The `LIKE` wildcards
+  `%` and `_` in a searched value are matched literally.
 - `TranslationOrderFilter` accepts `?order[title]=asc|desc`. A direction
   configured in `properties` (e.g. `['title' => 'DESC']`) is the default
   applied when the query parameter gives none; the parameter name is
@@ -400,6 +401,27 @@ GET /articles?locale=de&order[title]=asc      orders by the de title
 - Both filters match the resolved locale only: fallback-locale values are not
   considered, so a resource whose `de` translation is missing does not match a
   `de` search by its fallback value.
+
+On large collections, index what you filter by on the translation entity:
+
+```php
+#[ORM\Entity]
+#[ORM\Index(columns: ['locale', 'title'])]
+class ArticleTranslation extends AbstractTranslation
+{
+    // ...
+}
+```
+
+- An index on `locale` plus the field serves the `exact` and `start`
+  strategies.
+- `partial`, `end` and `word_start` start with a wildcard and the `i` variants
+  wrap the column in `LOWER()`, so a plain index cannot serve them; use what
+  your database offers for text search (on PostgreSQL, a `pg_trgm` index on
+  `LOWER(title)`).
+- Ordering by a translated field sorts the whole filtered collection before
+  the page is cut, and no index avoids that. Measure it on realistic data
+  before you expose it on a large, unfiltered collection.
 
 For service-based declaration (YAML/XML instead of the attribute), define a
 child service of the abstract parent
