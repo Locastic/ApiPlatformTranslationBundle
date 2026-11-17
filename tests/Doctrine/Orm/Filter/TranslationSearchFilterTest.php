@@ -45,7 +45,7 @@ final class TranslationSearchFilterTest extends TranslationFilterTestCase
     {
         $this->seedArticle(['en' => 'A cat EN', 'de' => 'A cat DE']);
         $this->seedArticle(['en' => 'A dog EN', 'de' => 'A dog DE']);
-        $this->seedArticle(['en' => 'Catalog EN', 'de' => 'Catalog DE']);
+        $this->seedArticle(['en' => 'catalog EN', 'de' => 'catalog DE']);
 
         $queryBuilder = $this->createQueryBuilder();
         $this->createFilter(['title' => $strategy])
@@ -57,16 +57,20 @@ final class TranslationSearchFilterTest extends TranslationFilterTestCase
     }
 
     /**
+     * The case-sensitive cases use values in the stored case, so the expected
+     * results hold on every database (sqlite's LIKE ignores ASCII case, others
+     * do not).
+     *
      * @return iterable<string, array{string, string, list<string>}>
      */
     public static function provideStrategies(): iterable
     {
-        yield 'partial' => ['partial', 'cat', ['A cat DE', 'Catalog DE']];
-        yield 'start' => ['start', 'Cat', ['Catalog DE']];
+        yield 'partial' => ['partial', 'cat', ['A cat DE', 'catalog DE']];
+        yield 'start' => ['start', 'cat', ['catalog DE']];
         yield 'end' => ['end', 'dog DE', ['A dog DE']];
-        yield 'word_start' => ['word_start', 'cat', ['A cat DE', 'Catalog DE']];
+        yield 'word_start' => ['word_start', 'cat', ['A cat DE', 'catalog DE']];
         yield 'iexact' => ['iexact', 'a CAT de', ['A cat DE']];
-        yield 'ipartial' => ['ipartial', 'CAT', ['A cat DE', 'Catalog DE']];
+        yield 'ipartial' => ['ipartial', 'CAT', ['A cat DE', 'catalog DE']];
     }
 
     public function testMultipleExactValuesBecomeAnInClause(): void
