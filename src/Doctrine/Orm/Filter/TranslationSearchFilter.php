@@ -101,18 +101,26 @@ final class TranslationSearchFilter extends AbstractTranslationFilter
             $caseSensitive = false;
         }
 
-        $rootAlias = $queryBuilder->getRootAliases()[0];
-        $joinAlias = $this->joinCurrentLocaleTranslations($queryBuilder, $queryNameGenerator, $rootAlias);
+        $values = array_map(strval(...), $values);
 
-        $this->addWhereByStrategy($strategy, $queryBuilder, $queryNameGenerator, $joinAlias, $property, array_map(strval(...), $values), $caseSensitive);
+        $queryBuilder->andWhere($this->existsCurrentLocaleTranslation(
+            $queryBuilder,
+            $queryNameGenerator,
+            $queryBuilder->getRootAliases()[0],
+            $resourceClass,
+            fn (string $alias): string => $this->buildConditionByStrategy($strategy, $queryBuilder, $queryNameGenerator, $alias, $property, $values, $caseSensitive),
+        ));
     }
 
     /**
+     * Builds the DQL condition on the translation alias and binds its
+     * parameters.
+     *
      * @param list<string> $values
      *
      * @throws \InvalidArgumentException if the strategy does not exist
      */
-    private function addWhereByStrategy(string $strategy, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $alias, string $field, array $values, bool $caseSensitive): void
+    private function buildConditionByStrategy(string $strategy, QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $alias, string $field, array $values, bool $caseSensitive): string
     {
         $wrapCase = $caseSensitive
             ? static fn (string $expr): string => $expr
@@ -122,18 +130,14 @@ final class TranslationSearchFilter extends AbstractTranslationFilter
 
         if (self::STRATEGY_EXACT === $strategy) {
             if (1 === \count($values)) {
-                $queryBuilder
-                    ->andWhere($queryBuilder->expr()->eq($wrapCase($aliasedField), $wrapCase($valueParameter)))
-                    ->setParameter($valueParameter, $values[0]);
+                $queryBuilder->setParameter($valueParameter, $values[0]);
 
-                return;
+                return (string) $queryBuilder->expr()->eq($wrapCase($aliasedField), $wrapCase($valueParameter));
             }
 
-            $queryBuilder
-                ->andWhere($queryBuilder->expr()->in($wrapCase($aliasedField), $valueParameter))
-                ->setParameter($valueParameter, $caseSensitive ? $values : array_map(strtolower(...), $values));
+            $queryBuilder->setParameter($valueParameter, $caseSensitive ? $values : array_map(strtolower(...), $values));
 
-            return;
+            return (string) $queryBuilder->expr()->in($wrapCase($aliasedField), $valueParameter);
         }
 
         // LIKE wildcards in the searched value are matched literally
@@ -163,9 +167,10 @@ final class TranslationSearchFilter extends AbstractTranslationFilter
             };
         }
 
-        $queryBuilder->andWhere($queryBuilder->expr()->orX(...$ors));
         foreach ($parameters as $parameterName => $parameterValue) {
             $queryBuilder->setParameter($parameterName, $parameterValue);
         }
+
+        return (string) $queryBuilder->expr()->orX(...$ors);
     }
 }

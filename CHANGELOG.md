@@ -6,6 +6,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- `TranslationOrderFilter` and `TranslationSearchFilter` no longer join the
+  to-many `translations` association: ordering joins the translation entity of
+  the current locale, searching uses an `EXISTS` subquery. Doctrine's Paginator
+  no longer wraps the count and identifier queries of an ordered collection in
+  a subquery over the whole joined result: ordering 200,000 resources by a
+  translated field went from about 1.9 seconds to about 0.3 seconds on
+  PostgreSQL, with a unique index on the translatable and `locale`. Both
+  filters now rely on one translation per resource and locale. When
+  `translations` is embedded and not mapped `EXTRA_LAZY`, the current locale is
+  no longer the first key of `translations` in a filtered or ordered collection
+
 ## [2.2.0] - 2026-11-17
 
 ### Added

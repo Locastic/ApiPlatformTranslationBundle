@@ -101,7 +101,7 @@ final class TranslationOrderFilter extends AbstractTranslationFilter
         }
 
         $rootAlias = $queryBuilder->getRootAliases()[0];
-        $joinAlias = $this->joinCurrentLocaleTranslations($queryBuilder, $queryNameGenerator, $rootAlias);
+        $joinAlias = $this->joinCurrentLocaleTranslation($queryBuilder, $queryNameGenerator, $rootAlias, $resourceClass);
 
         $queryBuilder->addOrderBy(\sprintf('%s.%s', $joinAlias, $property), $direction);
     }
