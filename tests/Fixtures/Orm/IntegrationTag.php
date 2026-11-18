@@ -10,13 +10,15 @@ use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 
 /**
- * Doctrine-mapped translatable with the mapping the README recommends: the
- * `translations` association is extra lazy and indexed by locale.
+ * Translatable whose `translations` association is unidirectional: the
+ * translation entity has no mapped field that points back to it. The filters
+ * cannot join the translation entity on such a mapping and must fall back to
+ * the association join.
  *
- * @extends AbstractTranslatable<IntegrationPageTranslation>
+ * @extends AbstractTranslatable<IntegrationTagTranslation>
  */
 #[ORM\Entity]
-class IntegrationPage extends AbstractTranslatable
+class IntegrationTag extends AbstractTranslatable
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,16 +26,9 @@ class IntegrationPage extends AbstractTranslatable
     private ?int $id = null;
 
     /**
-     * @var Collection<string, IntegrationPageTranslation>
+     * @var Collection<string, IntegrationTagTranslation>
      */
-    #[ORM\OneToMany(
-        targetEntity: IntegrationPageTranslation::class,
-        mappedBy: 'translatable',
-        fetch: 'EXTRA_LAZY',
-        indexBy: 'locale',
-        cascade: ['persist'],
-        orphanRemoval: true,
-    )]
+    #[ORM\ManyToMany(targetEntity: IntegrationTagTranslation::class, cascade: ['persist'], indexBy: 'locale')]
     protected Collection $translations;
 
     public function getId(): ?int
@@ -43,6 +38,6 @@ class IntegrationPage extends AbstractTranslatable
 
     protected function createTranslation(): TranslationInterface
     {
-        return new IntegrationPageTranslation();
+        return new IntegrationTagTranslation();
     }
 }

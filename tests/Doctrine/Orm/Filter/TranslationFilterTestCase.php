@@ -20,6 +20,8 @@ use Doctrine\Persistence\ManagerRegistry;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\LocaleAwareTranslatorInterface;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticle;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticleTranslation;
+use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationTag;
+use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationTagTranslation;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\QueryLogger;
 use Locastic\ApiPlatformTranslationBundle\Translation\Translator;
 use PHPUnit\Framework\TestCase;
@@ -127,15 +129,35 @@ abstract class TranslationFilterTestCase extends TestCase
     }
 
     /**
-     * @param list<IntegrationArticle> $articles
+     * A translatable whose translation has no field that points back to it.
+     *
+     * @param array<string, string> $localeToTitle
+     */
+    protected function seedTag(array $localeToTitle): void
+    {
+        $tag = new IntegrationTag();
+        foreach ($localeToTitle as $locale => $title) {
+            $translation = new IntegrationTagTranslation();
+            $translation->setLocale($locale);
+            $translation->setTitle($title);
+            $tag->addTranslation($translation);
+        }
+
+        $this->em->persist($tag);
+        $this->em->flush();
+        $this->em->clear();
+    }
+
+    /**
+     * @param list<IntegrationArticle|IntegrationTag> $translatables
      *
      * @return list<string|null>
      */
-    protected function titlesIn(array $articles, string $locale): array
+    protected function titlesIn(array $translatables, string $locale): array
     {
         return array_map(
-            static fn (IntegrationArticle $article): ?string => $article->getTranslation($locale)->getTitle(),
-            $articles,
+            static fn (IntegrationArticle|IntegrationTag $translatable): ?string => $translatable->getTranslation($locale)->getTitle(),
+            $translatables,
         );
     }
 }

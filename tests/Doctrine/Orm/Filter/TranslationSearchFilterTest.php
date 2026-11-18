@@ -6,11 +6,13 @@ namespace Locastic\ApiPlatformTranslationBundle\Tests\Doctrine\Orm\Filter;
 
 use ApiPlatform\Doctrine\Orm\Extension\FilterEagerLoadingExtension;
 use ApiPlatform\Doctrine\Orm\Util\QueryNameGenerator;
+use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Extension\TranslationsEagerLoadingExtension;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationOrderFilter;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Filter\TranslationSearchFilter;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticle;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticleTranslation;
+use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationTag;
 
 final class TranslationSearchFilterTest extends TranslationFilterTestCase
 {
@@ -234,9 +236,70 @@ final class TranslationSearchFilterTest extends TranslationFilterTestCase
     }
 
     /**
-     * No join at all: API Platform paginates with a plain LIMIT query and a
-     * plain count, not through the identifier query of the fetch-join
-     * Paginator.
+     * The default setup: the eager-loading extension fetch-joins the
+     * translations after the filter. The fetched collections are complete,
+     * the search does not restrict them to the locale searched in.
+     */
+    public function testSearchesNextToTheFetchJoinOfTheEagerLoadingExtension(): void
+    {
+        $this->seedArticle(['en' => 'A cat EN', 'de' => 'A cat DE']);
+        $this->seedArticle(['en' => 'A dog EN', 'de' => 'A dog DE']);
+        $this->seedArticle(['en' => 'catalog EN', 'de' => 'catalog DE']);
+
+        $queryBuilder = $this->createQueryBuilder();
+        $queryNameGenerator = new QueryNameGenerator();
+        $this->createFilter(['title' => 'partial'])
+            ->apply($queryBuilder, $queryNameGenerator, IntegrationArticle::class, null, ['filters' => ['title' => 'cat']]);
+        // the order API Platform applies its extensions in
+        (new FilterEagerLoadingExtension())->applyToCollection($queryBuilder, $queryNameGenerator, IntegrationArticle::class);
+        (new TranslationsEagerLoadingExtension())->applyToCollection($queryBuilder, $queryNameGenerator, IntegrationArticle::class);
+
+        $this->queryLogger->reset();
+        $paginator = $this->paginate($queryBuilder);
+        /** @var list<IntegrationArticle> $articles */
+        $articles = iterator_to_array($paginator, false);
+
+        self::assertSame(2.0, $paginator->getTotalItems());
+        // identifiers of the page, rows of the page, count
+        self::assertCount(3, $this->queryLogger->queries);
+        self::assertCount(2, $articles[0]->getTranslations());
+        self::assertSame(['A cat DE', 'catalog DE'], $this->titlesIn($articles, 'de'));
+    }
+
+    /**
+     * A unidirectional `translations` association gives the translation no
+     * field a subquery can be tied to the resource with: the filter keeps the
+     * association join it used before.
+     */
+    public function testFallsBackToTheAssociationJoinWithoutAFieldPointingBack(): void
+    {
+        $this->seedTag(['en' => 'A cat EN', 'de' => 'A cat DE']);
+        $this->seedTag(['en' => 'A cat EN', 'de' => 'A dog DE']);
+        $this->seedTag(['en' => 'A cat EN', 'de' => 'A cat XX']);
+        $this->seedTag(['en' => 'A cat EN', 'de' => 'A bird DE']);
+
+        $queryBuilder = $this->createQueryBuilder(IntegrationTag::class);
+        $queryNameGenerator = new QueryNameGenerator();
+        // (cat OR dog) AND ends with DE
+        $this->createFilter(['title' => 'partial'])
+            ->apply($queryBuilder, $queryNameGenerator, IntegrationTag::class, null, ['filters' => ['title' => ['cat', 'dog']]]);
+        $this->createFilter(['title' => 'end'])
+            ->apply($queryBuilder, $queryNameGenerator, IntegrationTag::class, null, ['filters' => ['title' => 'DE']]);
+
+        $dql = $queryBuilder->getDQL();
+        self::assertStringNotContainsString('EXISTS', $dql);
+        // both filters share the one association join
+        self::assertSame(1, substr_count($dql, 'LEFT JOIN o.translations translations_a1 WITH translations_a1.locale = :locale_p1'));
+        self::assertSame(1, substr_count($dql, 'JOIN'));
+        /** @var list<IntegrationTag> $tags */
+        $tags = $queryBuilder->getQuery()->getResult();
+        self::assertSame(['A cat DE', 'A dog DE'], $this->titlesIn($tags, 'de'));
+    }
+
+    /**
+     * The filter alone adds no join at all. Without the fetch join of the
+     * eager-loading extension (`eager_load_translations: false`), API
+     * Platform paginates with a plain LIMIT query and a plain count.
      */
     public function testPaginatesWithoutTheFetchJoinPaginator(): void
     {

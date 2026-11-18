@@ -11,6 +11,7 @@ use Locastic\ApiPlatformTranslationBundle\Model\TranslationInterface;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticle;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticleTranslation;
+use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationTag;
 
 final class TranslationOrderFilterTest extends TranslationFilterTestCase
 {
@@ -106,10 +107,9 @@ final class TranslationOrderFilterTest extends TranslationFilterTestCase
     }
 
     /**
-     * The acceptance case of the join on the translation entity: API Platform
-     * does not see a to-many join, so it paginates with a plain LIMIT query
-     * and a plain count. With the association join, Doctrine's Paginator
-     * wrapped the query and the database sorted every joined row first.
+     * The filter alone adds no to-many join. Without the fetch join of the
+     * eager-loading extension (`eager_load_translations: false`), API
+     * Platform paginates with a plain LIMIT query and a plain count.
      *
      * @dataProvider provideDirections
      *
@@ -160,9 +160,12 @@ final class TranslationOrderFilterTest extends TranslationFilterTestCase
     }
 
     /**
-     * A provider that does not load translations in a second step still gets
-     * the fetch join of the eager-loading extension; ordering must work with
-     * it, through the identifier query of the Paginator.
+     * The default setup: the eager-loading extension fetch-joins the
+     * translations, so API Platform paginates through Doctrine's Paginator.
+     * The ordering is not on a to-many join anymore, so the count and the
+     * identifier query run on the tables directly. With the association join
+     * they wrapped the whole query in a subquery (`dctrn_result`), and the
+     * database sorted every joined row before it applied the limit.
      */
     public function testOrdersNextToTheFetchJoinOfTheEagerLoadingExtension(): void
     {
@@ -177,14 +180,45 @@ final class TranslationOrderFilterTest extends TranslationFilterTestCase
             ->apply($queryBuilder, $queryNameGenerator, IntegrationArticle::class, null, ['filters' => ['order' => ['title' => 'desc']]]);
         (new TranslationsEagerLoadingExtension())->applyToCollection($queryBuilder, $queryNameGenerator, IntegrationArticle::class);
 
+        $this->queryLogger->reset();
         $paginator = $this->paginate($queryBuilder, 3);
         /** @var list<IntegrationArticle> $articles */
         $articles = iterator_to_array($paginator, false);
 
-        self::assertSame(['Zulu DE', 'Yankee DE', 'Xray DE'], $this->titlesIn($articles, 'de'));
         self::assertSame(4.0, $paginator->getTotalItems());
+        // identifiers of the page, rows of the page, count
+        self::assertCount(3, $this->queryLogger->queries);
+        self::assertStringNotContainsString('dctrn_result', implode("\n", $this->queryLogger->queries));
         // complete collections, not only the locale ordered by
         self::assertCount(2, $articles[0]->getTranslations());
+        self::assertSame(['Zulu DE', 'Yankee DE', 'Xray DE'], $this->titlesIn($articles, 'de'));
+    }
+
+    /**
+     * A unidirectional `translations` association gives the translation no
+     * field to join on: the filter keeps the association join it used before.
+     */
+    public function testFallsBackToTheAssociationJoinWithoutAFieldPointingBack(): void
+    {
+        $this->seedTag(['en' => 'Alpha EN', 'de' => 'Zulu DE']);
+        $this->seedTag(['en' => 'Untranslated EN']);
+        $this->seedTag(['en' => 'Bravo EN', 'de' => 'Xray DE']);
+
+        $queryBuilder = $this->createQueryBuilder(IntegrationTag::class);
+        $this->createFilter(['title' => null])
+            ->apply($queryBuilder, new QueryNameGenerator(), IntegrationTag::class, null, ['filters' => ['order' => ['title' => 'desc']]]);
+
+        self::assertSame(
+            \sprintf(
+                'SELECT o FROM %s o LEFT JOIN o.translations translations_a1 WITH translations_a1.locale = :locale_p1 ORDER BY translations_a1.title DESC',
+                IntegrationTag::class,
+            ),
+            $queryBuilder->getDQL(),
+        );
+        /** @var list<IntegrationTag> $tags */
+        $tags = $queryBuilder->getQuery()->getResult();
+        self::assertCount(3, $tags);
+        self::assertSame(['Zulu DE', 'Xray DE'], \array_slice($this->titlesIn($tags, 'de'), 0, 2));
     }
 
     public function testAppliesTheConfiguredDefaultDirection(): void

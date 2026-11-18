@@ -23,7 +23,3 @@ parameters:
             identifier: doctrine.associationType
             path: tests/Fixtures/Orm/IntegrationArticleTranslation.php
             count: 1
-        -
-            identifier: doctrine.associationType
-            path: tests/Fixtures/Orm/IntegrationPageTranslation.php
-            count: 1

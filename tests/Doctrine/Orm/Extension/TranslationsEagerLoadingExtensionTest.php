@@ -14,7 +14,6 @@ use Doctrine\ORM\Query\Expr\Join;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\ORM\Tools\SchemaTool;
 use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\Extension\TranslationsEagerLoadingExtension;
-use Locastic\ApiPlatformTranslationBundle\Doctrine\Orm\State\TranslationsCollectionProvider;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\DummyNotTranslatable;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticle;
 use Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm\IntegrationArticleTranslation;
@@ -64,38 +63,6 @@ final class TranslationsEagerLoadingExtensionTest extends TestCase
             \sprintf('SELECT o, translations_a1 FROM %s o LEFT JOIN o.translations translations_a1', IntegrationArticle::class),
             $queryBuilder->getDQL(),
         );
-    }
-
-    public function testLeavesTheCollectionQueryAloneWhenTheProviderLoadsTheTranslations(): void
-    {
-        $queryBuilder = $this->createQueryBuilder();
-        $dql = $queryBuilder->getDQL();
-
-        (new TranslationsEagerLoadingExtension())->applyToCollection(
-            $queryBuilder,
-            new QueryNameGenerator(),
-            IntegrationArticle::class,
-            null,
-            [TranslationsCollectionProvider::TRANSLATIONS_LOADED_AFTER_QUERY => true],
-        );
-
-        self::assertSame($dql, $queryBuilder->getDQL());
-    }
-
-    public function testItemQueryFetchJoinsTranslationsWhateverTheContext(): void
-    {
-        $queryBuilder = $this->createQueryBuilder();
-
-        (new TranslationsEagerLoadingExtension())->applyToItem(
-            $queryBuilder,
-            new QueryNameGenerator(),
-            IntegrationArticle::class,
-            ['id' => 1],
-            null,
-            [TranslationsCollectionProvider::TRANSLATIONS_LOADED_AFTER_QUERY => true],
-        );
-
-        self::assertStringContainsString('LEFT JOIN o.translations translations_a1', $queryBuilder->getDQL());
     }
 
     public function testItemQueryFetchJoinsTranslations(): void

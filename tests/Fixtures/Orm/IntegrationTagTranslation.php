@@ -6,22 +6,19 @@ namespace Locastic\ApiPlatformTranslationBundle\Tests\Fixtures\Orm;
 
 use Doctrine\ORM\Mapping as ORM;
 use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslation;
-use Locastic\ApiPlatformTranslationBundle\Model\TranslatableInterface;
 
+/**
+ * The inherited `$translatable` property is deliberately not mapped, see
+ * {@see IntegrationTag}.
+ */
 #[ORM\Entity]
-class IntegrationPageTranslation extends AbstractTranslation
+class IntegrationTagTranslation extends AbstractTranslation
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: IntegrationPage::class, inversedBy: 'translations')]
-    #[ORM\JoinColumn(nullable: false)]
-    protected ?TranslatableInterface $translatable = null;
-
-    // Nullable to match the inherited `?string` property type (invariance forbids
-    // narrowing it here); locale is always set in practice.
     #[ORM\Column(nullable: true)]
     protected ?string $locale = null;
 

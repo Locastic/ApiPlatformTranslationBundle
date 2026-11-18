@@ -90,12 +90,21 @@ abstract class AbstractTranslationFilter extends AbstractFilter
      * through Doctrine's fetch-join Paginator, which sorts the whole joined
      * result before it applies the limit. A resource has one translation per
      * locale, so this join never multiplies rows.
+     *
+     * When the translation entity has no field that points back to the
+     * resource (`translations` is not the inverse side of a bidirectional
+     * association), there is nothing to join on and the association join of
+     * {@see joinCurrentLocaleTranslations()} is used.
      */
     protected function joinCurrentLocaleTranslation(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $rootAlias, string $resourceClass): string
     {
         $translationClass = $this->getTranslationMetadata($resourceClass)?->getName();
         if (null === $translationClass) {
             throw new \InvalidArgumentException(\sprintf('"%s" has no translations.', $resourceClass));
+        }
+
+        if (!$this->isTranslationsInverseSide($resourceClass)) {
+            return $this->joinCurrentLocaleTranslations($queryBuilder, $queryNameGenerator, $rootAlias);
         }
 
         $locale = $this->translator->loadCurrentLocale();
@@ -140,6 +149,10 @@ abstract class AbstractTranslationFilter extends AbstractFilter
      * is no option here, API Platform's FilterEagerLoadingExtension does not
      * carry such a join into the subquery it moves the WHERE clause to.
      *
+     * When the translation entity has no field that points back to the
+     * resource, the subquery cannot be tied to it: the condition is then put
+     * on the association join of {@see joinCurrentLocaleTranslations()}.
+     *
      * @param callable(string): string $condition
      */
     protected function existsCurrentLocaleTranslation(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $rootAlias, string $resourceClass, callable $condition): string
@@ -147,6 +160,10 @@ abstract class AbstractTranslationFilter extends AbstractFilter
         $translationClass = $this->getTranslationMetadata($resourceClass)?->getName();
         if (null === $translationClass) {
             throw new \InvalidArgumentException(\sprintf('"%s" has no translations.', $resourceClass));
+        }
+
+        if (!$this->isTranslationsInverseSide($resourceClass)) {
+            return \sprintf('(%s)', $condition($this->joinCurrentLocaleTranslations($queryBuilder, $queryNameGenerator, $rootAlias)));
         }
 
         $alias = $queryNameGenerator->generateJoinAlias('translations');
@@ -170,10 +187,12 @@ abstract class AbstractTranslationFilter extends AbstractFilter
      * selected: the eager-loading extension knows to leave conditioned joins
      * alone, so the hydrated collections stay complete.
      *
-     * The bundle's filters do not use this join anymore: API Platform sees a
-     * to-many join and paginates through the fetch-join Paginator. Prefer
+     * API Platform sees a to-many join and paginates through the fetch-join
+     * Paginator, which is slow on large collections. Prefer
      * {@see joinCurrentLocaleTranslation()} to order and
-     * {@see existsCurrentLocaleTranslation()} to constrain.
+     * {@see existsCurrentLocaleTranslation()} to constrain: they use this join
+     * only when the translation entity has no field that points back to the
+     * resource.
      */
     protected function joinCurrentLocaleTranslations(QueryBuilder $queryBuilder, QueryNameGeneratorInterface $queryNameGenerator, string $rootAlias): string
     {
@@ -231,6 +250,17 @@ abstract class AbstractTranslationFilter extends AbstractFilter
         }
 
         return \sprintf('%s.%s = %s', $translationAlias, $translatableField, $rootAlias);
+    }
+
+    /**
+     * Whether the translation entity has a field that points back to the
+     * resource, which a join on the translation entity and a subquery need to
+     * tie a translation to its resource. The documented mapping (OneToMany
+     * with `mappedBy`) has it.
+     */
+    private function isTranslationsInverseSide(string $resourceClass): bool
+    {
+        return true === $this->getTranslatableMetadata($resourceClass)?->isAssociationInverseSide('translations');
     }
 
     /**
