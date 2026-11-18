@@ -1,8 +1,21 @@
 {
   "name": "locastic/api-platform-translation-bundle",
-  "description": "Translation bundle for Api platform based on Sylius translation",
+  "description": "Entity translations for API Platform and Doctrine ORM: one translation row per locale, locale resolved from the request, search and sort by translated fields.",
   "license": "MIT",
   "type": "symfony-bundle",
+  "keywords": [
+    "api-platform",
+    "symfony",
+    "doctrine",
+    "translation",
+    "translatable",
+    "i18n",
+    "l10n",
+    "multilingual",
+    "localization",
+    "entity-translation"
+  ],
+  "homepage": "https://github.com/Locastic/ApiPlatformTranslationBundle",
   "authors": [
     {
       "name": "Paula",
