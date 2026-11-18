@@ -6,6 +6,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-11-18
+
 ### Changed
 - `TranslationOrderFilter` and `TranslationSearchFilter` no longer join the
   to-many `translations` association: ordering joins the translation entity of
@@ -17,6 +19,7 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   filters now rely on one translation per resource and locale. When
   `translations` is embedded and not mapped `EXTRA_LAZY`, the current locale is
   no longer the first key of `translations` in a filtered or ordered collection
+  (#93)
 
 ## [2.2.0] - 2026-11-17
 
@@ -123,7 +126,8 @@ See [UPGRADE-2.0.md](UPGRADE-2.0.md) for upgrade instructions.
 Older releases are documented on the
 [releases page](https://github.com/Locastic/ApiPlatformTranslationBundle/releases).
 
-[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.1...v2.1.0
 [2.0.1]: https://github.com/Locastic/ApiPlatformTranslationBundle/compare/v2.0.0...v2.0.1
