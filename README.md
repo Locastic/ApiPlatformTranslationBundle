@@ -438,6 +438,427 @@ child service of the abstract parent
 `locastic_api_platform_translation.doctrine.orm.filter.translation_order`,
 pass `$properties`, and tag it `api_platform.filter`.
 
+Using DTO resources:
+--------------------
+
+Everything above exposes the Doctrine entity as the API resource and shapes it
+with serialization groups. API Platform's documentation recommends the
+[DTO as a resource](https://api-platform.com/docs/core/dto/) pattern: a plain
+class carries `#[ApiResource]` and the state layer maps between it and the
+entity. The bundle works in that setup too:
+
+- **Reads need nothing extra.** The bundle sets the current and fallback
+  locale on every translatable entity when Doctrine loads it, so the
+  translated getters return the right locale when you map the entity to the
+  DTO. `?locale=`, `Accept-Language` and the fallback locale behave as
+  described under [Usage](#usage).
+- **Writes need your own matching by locale.** The bundle matches submitted
+  translations to their existing rows only when the resource is the entity
+  itself. With a DTO your code does it, as in the two examples below, so that
+  existing rows are updated in place and keep their ids.
+- `eager_load_translations` and the two translation filters work unchanged.
+  Declare the filters with `#[ApiFilter]` on the DTO class.
+- The `translation.groups` filter and the `translations` serialization group
+  do not apply. Expose the translations as a property of the DTO instead.
+
+The entity stays as shown under [Implementation](#implementation), without the
+`#[ApiResource]` attribute and the serialization groups. Both examples use the
+same DTO for one translation:
+
+```php
+// src/ApiResource/ArticleTranslationDto.php
+namespace App\ApiResource;
+
+final class ArticleTranslationDto
+{
+    public ?string $title = null;
+    public ?string $locale = null;
+}
+```
+
+The examples type the `translations` property of the resource as
+`array<string, ArticleTranslationDto>`. The serializer reads that type from
+the docblock, and that needs two packages. Without them the entries reach
+your code as plain arrays:
+
+```bash
+composer require phpstan/phpdoc-parser phpdocumentor/type-resolver
+```
+
+### With a state provider and processor
+
+This variant works on every supported API Platform version. The provider and
+the processor delegate fetching, pagination, filters and persistence to API
+Platform's own Doctrine services, which read `stateOptions` and work on the
+entity:
+
+```php
+// src/ApiResource/ArticleResource.php
+namespace App\ApiResource;
+
+use ApiPlatform\Doctrine\Orm\State\Options;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Entity\Article;
+use App\State\ArticleResourceProcessor;
+use App\State\ArticleResourceProvider;
+
+#[ApiResource(
+    shortName: 'Article',
+    // The entity behind this resource, for API Platform's Doctrine services.
+    stateOptions: new Options(entityClass: Article::class),
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Patch(),
+        // PUT needs standard_put off, see the note below.
+        new Put(extraProperties: ['standard_put' => false]),
+        new Delete(),
+    ],
+    provider: ArticleResourceProvider::class,
+    processor: ArticleResourceProcessor::class,
+)]
+final class ArticleResource
+{
+    public ?int $id = null;
+
+    /**
+     * Translated value in the requested (or fallback) locale. The processor
+     * does not write it: writes go through `translations`.
+     */
+    public ?string $title = null;
+
+    /**
+     * All translations, keyed by locale.
+     *
+     * @var array<string, ArticleTranslationDto>
+     */
+    public array $translations = [];
+
+    public static function fromEntity(Article $article): self
+    {
+        $resource = new self();
+        $resource->id = $article->getId();
+        $resource->title = $article->getTitle();
+
+        foreach ($article->getTranslations() as $translation) {
+            $dto = new ArticleTranslationDto();
+            $dto->title = $translation->getTitle();
+            $dto->locale = $translation->getLocale();
+            $resource->translations[$dto->locale] = $dto;
+        }
+
+        return $resource;
+    }
+}
+```
+
+```php
+// src/State/ArticleResourceProvider.php
+namespace App\State;
+
+use ApiPlatform\Metadata\CollectionOperationInterface;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\Pagination\PaginatorInterface;
+use ApiPlatform\State\Pagination\TraversablePaginator;
+use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\ArticleResource;
+use App\Entity\Article;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+final readonly class ArticleResourceProvider implements ProviderInterface
+{
+    public function __construct(
+        #[Autowire(service: 'api_platform.doctrine.orm.state.item_provider')]
+        private ProviderInterface $itemProvider,
+        #[Autowire(service: 'api_platform.doctrine.orm.state.collection_provider')]
+        private ProviderInterface $collectionProvider,
+    ) {
+    }
+
+    public function provide(Operation $operation, array $uriVariables = [], array $context = []): object|array|null
+    {
+        if ($operation instanceof CollectionOperationInterface) {
+            $articles = $this->collectionProvider->provide($operation, $uriVariables, $context);
+
+            $resources = [];
+            foreach ($articles as $article) {
+                $resources[] = ArticleResource::fromEntity($article);
+            }
+
+            if ($articles instanceof PaginatorInterface) {
+                return new TraversablePaginator(
+                    new \ArrayIterator($resources),
+                    $articles->getCurrentPage(),
+                    $articles->getItemsPerPage(),
+                    $articles->getTotalItems(),
+                );
+            }
+
+            return $resources;
+        }
+
+        $article = $this->itemProvider->provide($operation, $uriVariables, $context);
+
+        return $article instanceof Article ? ArticleResource::fromEntity($article) : null;
+    }
+}
+```
+
+The processor applies the submitted translations to the managed entity.
+`getOrCreateTranslation($locale)` returns the existing translation of exactly
+that locale, or creates and attaches a new one:
+
+```php
+// src/State/ArticleResourceProcessor.php
+namespace App\State;
+
+use ApiPlatform\Metadata\DeleteOperationInterface;
+use ApiPlatform\Metadata\Operation;
+use ApiPlatform\State\ProcessorInterface;
+use ApiPlatform\State\ProviderInterface;
+use App\ApiResource\ArticleResource;
+use App\Entity\Article;
+use App\Entity\ArticleTranslation;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+final readonly class ArticleResourceProcessor implements ProcessorInterface
+{
+    public function __construct(
+        #[Autowire(service: 'api_platform.doctrine.orm.state.item_provider')]
+        private ProviderInterface $itemProvider,
+        #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
+        private ProcessorInterface $persistProcessor,
+        #[Autowire(service: 'api_platform.doctrine.orm.state.remove_processor')]
+        private ProcessorInterface $removeProcessor,
+    ) {
+    }
+
+    public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []): ?ArticleResource
+    {
+        if ($operation instanceof DeleteOperationInterface) {
+            $article = $this->itemProvider->provide($operation, $uriVariables, $context);
+            $this->removeProcessor->process($article, $operation, $uriVariables, $context);
+
+            return null;
+        }
+
+        \assert($data instanceof ArticleResource);
+
+        // A new entity for POST, the managed one for PATCH and PUT.
+        $article = [] === $uriVariables
+            ? new Article()
+            : $this->itemProvider->provide($operation, $uriVariables, $context);
+
+        foreach ($data->translations as $locale => $translationDto) {
+            // Exact locale, no fallback: the existing row, or a new one.
+            $translation = $article->getOrCreateTranslation($locale);
+            \assert($translation instanceof ArticleTranslation);
+
+            if (null !== $translationDto->title) {
+                $translation->setTitle($translationDto->title);
+            }
+        }
+
+        // PUT is a full replace: remove the locales absent from the payload.
+        if ('PUT' === $operation->getMethod()) {
+            foreach ($article->getTranslationLocales() as $existingLocale) {
+                if (!isset($data->translations[$existingLocale])) {
+                    $article->removeTranslationWithLocale($existingLocale);
+                }
+            }
+        }
+
+        $article = $this->persistProcessor->process($article, $operation, $uriVariables, $context);
+
+        return ArticleResource::fromEntity($article);
+    }
+}
+```
+
+`POST` and `PATCH` take the payloads shown under [Usage](#usage): a
+`translations` object keyed by locale. `PATCH` updates the submitted locales
+and leaves the others untouched.
+
+`PUT` needs `standard_put` disabled in this setup too. With `standard_put`
+on, API Platform's persist processor expects an entity where this setup has
+the DTO, and the request fails with "Given object is not an instance of the
+class this property was declared in".
+
+### With the Symfony Object Mapper
+
+On API Platform 4.2 or later, the
+[Symfony Object Mapper](https://symfony.com/doc/current/object_mapper.html)
+(`symfony/object-mapper` 7.4 or later) can map between the DTO and the entity.
+This variant has no provider and no processor:
+
+```bash
+composer require symfony/object-mapper
+```
+
+On an update, API Platform maps the submitted DTO onto the managed entity and
+passes that entity to the transformer as `$target`, so one transformer service
+can match the translations by locale:
+
+```php
+// src/ApiResource/ArticleResource.php
+namespace App\ApiResource;
+
+use ApiPlatform\Doctrine\Orm\State\Options;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use App\Entity\Article;
+use App\State\ArticleTranslationsTransformer;
+use Symfony\Component\ObjectMapper\Attribute\Map;
+
+#[ApiResource(
+    shortName: 'Article',
+    stateOptions: new Options(entityClass: Article::class),
+    operations: [
+        new Get(),
+        new GetCollection(),
+        new Post(),
+        new Patch(),
+        new Delete(),
+    ],
+)]
+#[Map(source: Article::class)]
+final class ArticleResource
+{
+    public ?int $id = null;
+
+    /**
+     * Translated value in the requested (or fallback) locale. Mapped from the
+     * entity only: mapped back, it would go through the entity's virtual
+     * setter and write into a single locale. Writes go through `translations`.
+     */
+    #[Map(if: [self::class, 'onlyFromEntity'])]
+    public ?string $title = null;
+
+    /**
+     * All translations, keyed by locale.
+     *
+     * @var array<string, ArticleTranslationDto>
+     */
+    #[Map(source: 'translations', transform: ArticleTranslationsTransformer::class)]
+    public array $translations = [];
+
+    public static function onlyFromEntity(mixed $value, object $source): bool
+    {
+        return $source instanceof Article;
+    }
+}
+```
+
+```php
+// src/State/ArticleTranslationsTransformer.php
+namespace App\State;
+
+use App\ApiResource\ArticleResource;
+use App\ApiResource\ArticleTranslationDto;
+use App\Entity\Article;
+use App\Entity\ArticleTranslation;
+use Locastic\ApiPlatformTranslationBundle\Model\AbstractTranslatable;
+use Symfony\Component\ObjectMapper\TransformCallableInterface;
+
+/**
+ * Maps the `translations` property in both directions:
+ *  - entity to resource: translation entities to DTOs keyed by locale;
+ *  - resource to entity: matches the submitted locales to the existing
+ *    translations of the entity (update in place, create only new locales).
+ */
+final class ArticleTranslationsTransformer implements TransformCallableInterface
+{
+    public function __invoke(mixed $value, object $source, ?object $target): mixed
+    {
+        if ($source instanceof Article) {
+            return $this->toDtos($source);
+        }
+
+        \assert($source instanceof ArticleResource);
+
+        return $this->toTranslations($value, $target);
+    }
+
+    /**
+     * @return array<string, ArticleTranslationDto>
+     */
+    private function toDtos(Article $article): array
+    {
+        $dtos = [];
+
+        foreach ($article->getTranslations() as $translation) {
+            $dto = new ArticleTranslationDto();
+            $dto->title = $translation->getTitle();
+            $dto->locale = $translation->getLocale();
+            $dtos[$dto->locale] = $dto;
+        }
+
+        return $dtos;
+    }
+
+    /**
+     * Returns the complete set (existing plus submitted). The returned list
+     * is applied to the entity through addTranslation()/removeTranslation(),
+     * so a list with only the submitted locales would remove the others.
+     *
+     * @param array<string, ArticleTranslationDto> $value
+     *
+     * @return list<ArticleTranslation>
+     */
+    private function toTranslations(array $value, ?object $target): array
+    {
+        $existing = [];
+
+        // On POST the target is a new entity that was created without its
+        // constructor, so the translations collection is not initialized yet.
+        if ($target instanceof Article && $this->isInitialized($target)) {
+            foreach ($target->getTranslations() as $translation) {
+                $existing[(string) $translation->getLocale()] = $translation;
+            }
+        }
+
+        foreach ($value as $locale => $dto) {
+            $translation = $existing[$locale] ?? null;
+
+            if (null === $translation) {
+                $translation = new ArticleTranslation();
+                $translation->setLocale($locale);
+                $existing[$locale] = $translation;
+            }
+
+            if (null !== $dto->title) {
+                $translation->setTitle($dto->title);
+            }
+        }
+
+        return array_values($existing);
+    }
+
+    private function isInitialized(Article $article): bool
+    {
+        return (new \ReflectionProperty(AbstractTranslatable::class, 'translations'))
+            ->isInitialized($article);
+    }
+}
+```
+
+`GET`, `POST`, `PATCH` and `DELETE` work with no further code. This variant
+has no `PUT`: with `standard_put` on, the request fails as described above,
+and with it off this transformer merges like `PATCH` and keeps the locales
+that are absent from the payload. Use `PATCH`, or the provider and processor
+variant when you need a full replace.
+
 ## Contribution
 
 If you have an idea on how to improve this bundle, feel free to contribute. If you have problems or you found some bugs, please open an issue.
